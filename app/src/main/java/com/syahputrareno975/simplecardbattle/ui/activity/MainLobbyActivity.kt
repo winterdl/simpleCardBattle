@@ -63,7 +63,7 @@ class MainLobbyActivity : AppCompatActivity() {
         this.context = this@MainLobbyActivity
         IntentData = intent
 
-        player = IntentData.getSerializableExtra("player") as PlayerWithCardsModel
+        player = SerializableSave(context, SerializableSave.userDataFileSessionName).load() as PlayerWithCardsModel
 
         layout_shoping.visibility = View.GONE
         layout_profile.visibility = View.GONE
@@ -325,6 +325,7 @@ class MainLobbyActivity : AppCompatActivity() {
     //-----------LobbyEvent-------------//
 
     val LobbyEvent = object : LobbyStreamEvent {
+
         override fun onBattleFound(r: RoomDataModel) {
 
             if (::searchingBattle.isInitialized && searchingBattle.isShowing){
@@ -338,6 +339,29 @@ class MainLobbyActivity : AppCompatActivity() {
                 .setPositiveButton("Ok") { dialog, which ->
                     dialog.dismiss()
                 }
+                .setCancelable(false)
+                .create()
+                .show()
+        }
+
+        override fun onBattleNotFound() {
+
+            if (::searchingBattle.isInitialized && searchingBattle.isShowing){
+                searchingBattle.dismiss()
+            }
+
+            AlertDialog.Builder(context)
+                .setTitle("Battle Not Found")
+                .setMessage("no matching opponend found")
+                .setPositiveButton("Try Again") { dialog, which ->
+                    if (::controller.isInitialized){
+                        controller.joinWaitingRoom(player.Owner)
+                    }
+                    dialog.dismiss()
+                }
+                .setNegativeButton("Back",{dialog,pos ->
+                    dialog.dismiss()
+                })
                 .setCancelable(false)
                 .create()
                 .show()

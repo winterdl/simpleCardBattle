@@ -35,9 +35,7 @@ class Login : AppCompatActivity() {
         login_button.setOnClickListener(onLoginButtonClick)
 
         if (SerializableSave(context, SerializableSave.userDataFileSessionName).load() != null){
-            val playerData = SerializableSave(context, SerializableSave.userDataFileSessionName).load() as PlayerWithCardsModel
             val intent = Intent(context,MainLobbyActivity::class.java)
-            intent.putExtra("player",playerData)
             startActivity(intent)
             finish()
         }
@@ -79,7 +77,6 @@ class Login : AppCompatActivity() {
 
                 if (SerializableSave(context, SerializableSave.userDataFileSessionName).save(p)){
                     val intent = Intent(context,MainLobbyActivity::class.java)
-                    intent.putExtra("player",p)
                     startActivity(intent)
                     finish()
                 }

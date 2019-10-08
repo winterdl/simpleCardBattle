@@ -4,6 +4,6 @@ import com.syahputrareno975.simpleuno.model.NetworkConfig
 
 class NetDefault {
     companion object{
-        val NetConfigDefault = NetworkConfig("10.10.4.24",8000)
+        val NetConfigDefault = NetworkConfig("192.168.137.1",8000)
     }
 }

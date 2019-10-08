@@ -21,6 +21,7 @@ interface LobbyStreamEvent {
     fun onPlayerCardUpdated()
     fun onGetPlayerData(p : PlayerWithCardsModel)
     fun onBattleFound(r : RoomDataModel)
+    fun onBattleNotFound()
     fun onJoinWaitingRoom()
     fun onLeftWaitingRoom()
     fun onError(e : String)

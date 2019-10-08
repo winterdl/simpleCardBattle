@@ -276,6 +276,9 @@ class LobbyStreamTask : AsyncTask<Void, Void, Boolean> {
                 CardBattle.lobbyStream.EventCase.ONBATTLEFOUND -> {
                     lobbyStreamEvent.onBattleFound(toRoomModel(holder.event!!.onBattleFound))
                 }
+                CardBattle.lobbyStream.EventCase.ONBATTLENOTFOUND -> {
+                    lobbyStreamEvent.onBattleNotFound()
+                }
                 else -> {
 
                 }
