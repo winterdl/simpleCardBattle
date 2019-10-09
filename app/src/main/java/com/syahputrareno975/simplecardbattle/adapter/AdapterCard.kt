@@ -9,12 +9,11 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 import com.syahputrareno975.simplecardbattle.R
 import com.syahputrareno975.simplecardbattle.model.card.CardModel
-import com.syahputrareno975.simpleuno.NetDefault.Companion.NetConfigDefault
+import com.syahputrareno975.simplecardbattle.util.NetDefault.Companion.NetConfigDefault
 import java.lang.Exception
 
 class AdapterCard : RecyclerView.Adapter<AdapterCard.ViewHolder> {

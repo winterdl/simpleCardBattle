@@ -18,6 +18,7 @@ import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toPlay
 import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toPlayerWithCardsModelGRPC
 import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toRoomModel
 import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toRoomModelGRPC
+import com.syahputrareno975.simplecardbattle.model.NetworkConfig
 import com.syahputrareno975.simplecardbattle.model.card.AllCardModel
 import com.syahputrareno975.simplecardbattle.model.card.CardModel
 import com.syahputrareno975.simplecardbattle.model.player.AllPlayerModel
@@ -25,7 +26,6 @@ import com.syahputrareno975.simplecardbattle.model.player.PlayerModel
 import com.syahputrareno975.simplecardbattle.model.playerWithCard.PlayerWithCardsModel
 import com.syahputrareno975.simplecardbattle.model.room.AllRoomModel
 import com.syahputrareno975.simplecardbattle.model.room.RoomDataModel
-import com.syahputrareno975.simpleuno.model.NetworkConfig
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import io.grpc.stub.StreamObserver

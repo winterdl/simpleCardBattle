@@ -5,8 +5,8 @@ import cardBattle.CardBattle
 import cardBattle.cardBattleServiceGrpc
 import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toPlayerModel
 import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toPlayerModelGRPC
+import com.syahputrareno975.simplecardbattle.model.NetworkConfig
 import com.syahputrareno975.simplecardbattle.model.player.PlayerModel
-import com.syahputrareno975.simpleuno.model.NetworkConfig
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import java.lang.Exception
