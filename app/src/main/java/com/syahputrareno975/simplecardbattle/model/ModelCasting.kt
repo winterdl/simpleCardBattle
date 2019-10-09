@@ -6,6 +6,8 @@ import com.syahputrareno975.simplecardbattle.model.card.CardModel
 import com.syahputrareno975.simplecardbattle.model.player.AllPlayerModel
 import com.syahputrareno975.simplecardbattle.model.playerWithCard.AllPlayerWithCardsModel
 import com.syahputrareno975.simplecardbattle.model.player.PlayerModel
+import com.syahputrareno975.simplecardbattle.model.playerBattleResult.AllPlayerBattleResultModel
+import com.syahputrareno975.simplecardbattle.model.playerBattleResult.PlayerBattleResultModel
 import com.syahputrareno975.simplecardbattle.model.playerWithCard.PlayerWithCardsModel
 import com.syahputrareno975.simplecardbattle.model.room.AllRoomModel
 import com.syahputrareno975.simplecardbattle.model.room.RoomDataModel
@@ -198,5 +200,33 @@ class ModelCasting {
                 .build()
         }
 
+        fun toPlayerBattleResultModelModel(p : CardBattle.playerBattleResult) : PlayerBattleResultModel{
+            return PlayerBattleResultModel(toPlayerModel(p.owner),p.damageReceive)
+        }
+
+        fun toPlayerBattleResultModelModelGRPC(p : PlayerBattleResultModel) : CardBattle.playerBattleResult{
+           return CardBattle.playerBattleResult.newBuilder()
+               .setOwner(toPlayerModelGRPC(p.Owner))
+               .setDamageReceive(p.DamageReceive)
+               .build()
+        }
+
+
+        fun toAllPlayerBattleResultModelModel(p : CardBattle.allPlayerBattleResult) : AllPlayerBattleResultModel {
+            val results = ArrayList<PlayerBattleResultModel>()
+            for (i in p.resultsList){
+                results.add(toPlayerBattleResultModelModel(i))
+            }
+            return AllPlayerBattleResultModel(results)
+        }
+        fun toAllPlayerBattleResultModelModelGRPC(p : AllPlayerBattleResultModel ) : CardBattle.allPlayerBattleResult{
+            val results = ArrayList<CardBattle.playerBattleResult>()
+            for (i in p.Results){
+                results.add(toPlayerBattleResultModelModelGRPC(i))
+            }
+            return CardBattle.allPlayerBattleResult.newBuilder()
+                .addAllResults(results)
+                .build()
+        }
     }
 }

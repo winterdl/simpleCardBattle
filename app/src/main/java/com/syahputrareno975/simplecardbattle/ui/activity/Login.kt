@@ -11,11 +11,9 @@ import androidx.appcompat.app.AlertDialog
 import com.syahputrareno975.simplecardbattle.R
 import com.syahputrareno975.simplecardbattle.model.player.PlayerModel
 import com.syahputrareno975.simplecardbattle.model.playerWithCard.PlayerWithCardsModel
-import com.syahputrareno975.simplecardbattle.task.LobbyStreamTask
 import com.syahputrareno975.simplecardbattle.task.LoginTask
-import com.syahputrareno975.simpleuno.NetDefault
-import com.syahputrareno975.simpleuno.NetDefault.Companion.NetConfigDefault
-import com.syahputrareno975.simpleuno.SerializableSave
+import com.syahputrareno975.simplecardbattle.util.NetDefault.Companion.NetConfigDefault
+import com.syahputrareno975.simplecardbattle.util.SerializableSave
 import kotlinx.android.synthetic.main.activity_login.*
 
 class Login : AppCompatActivity() {

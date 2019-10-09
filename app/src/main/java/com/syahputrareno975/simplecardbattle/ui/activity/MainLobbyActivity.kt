@@ -20,9 +20,8 @@ import com.syahputrareno975.simplecardbattle.model.playerWithCard.PlayerWithCard
 import com.syahputrareno975.simplecardbattle.model.room.RoomDataModel
 import com.syahputrareno975.simplecardbattle.task.LobbyStreamTask
 import com.syahputrareno975.simplecardbattle.ui.dialog.DialogCardInfo
-import com.syahputrareno975.simplecardbattle.ui.dialog.DialogRegisterPlayer
-import com.syahputrareno975.simpleuno.NetDefault.Companion.NetConfigDefault
-import com.syahputrareno975.simpleuno.SerializableSave
+import com.syahputrareno975.simplecardbattle.util.NetDefault.Companion.NetConfigDefault
+import com.syahputrareno975.simplecardbattle.util.SerializableSave
 import com.syahputrareno975.simpleuno.adapter.AdapterCard
 import com.syahputrareno975.simpleuno.adapter.AdapterPlayer
 import com.syahputrareno975.simpleuno.adapter.AdapterRoom

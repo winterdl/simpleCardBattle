@@ -1,4 +1,4 @@
-package com.syahputrareno975.simpleuno
+package com.syahputrareno975.simplecardbattle.util
 
 import android.content.Context
 

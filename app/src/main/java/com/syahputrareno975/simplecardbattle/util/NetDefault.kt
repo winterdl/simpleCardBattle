@@ -1,6 +1,6 @@
-package com.syahputrareno975.simpleuno
+package com.syahputrareno975.simplecardbattle.util
 
-import com.syahputrareno975.simpleuno.model.NetworkConfig
+import com.syahputrareno975.simplecardbattle.model.NetworkConfig
 
 class NetDefault {
     companion object{
