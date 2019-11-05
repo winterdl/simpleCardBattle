@@ -51,6 +51,8 @@ class MainLobbyActivity : AppCompatActivity() {
     lateinit var leaving : ProgressDialog
     lateinit var searchingBattle : ProgressDialog
 
+    var room : RoomDataModel = RoomDataModel()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_lobby)
@@ -331,16 +333,11 @@ class MainLobbyActivity : AppCompatActivity() {
                 searchingBattle.dismiss()
             }
 
+            room = r
 
-            AlertDialog.Builder(context)
-                .setTitle("Battle Found")
-                .setMessage("You want to fight again oponent in ${r.RoomName}, this match will prove to all player, you are the master of card")
-                .setPositiveButton("Ok") { dialog, which ->
-                    dialog.dismiss()
-                }
-                .setCancelable(false)
-                .create()
-                .show()
+            if (::controller.isInitialized) {
+                controller.leftLobbyToBattle()
+            }
         }
 
         override fun onBattleNotFound() {
@@ -526,8 +523,9 @@ class MainLobbyActivity : AppCompatActivity() {
 
         override fun onLeftLobbyToBattle() {
 
-            // go to battle
-            // activity
+            val intent = Intent(context,RoomBattle::class.java)
+            intent.putExtra("room",room)
+            startActivity(intent)
 
             finish()
         }
