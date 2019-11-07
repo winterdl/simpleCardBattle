@@ -12,6 +12,7 @@ interface RoomStreamEvent {
     fun onCountDown(i : Int)
     fun onResult(r : AllPlayerBattleResultModel)
     fun onWinner(p : PlayerModel)
+    fun onDraw()
     fun onGetRoomData(r : RoomDataModel)
     fun onLeft()
     fun onDisconnected()

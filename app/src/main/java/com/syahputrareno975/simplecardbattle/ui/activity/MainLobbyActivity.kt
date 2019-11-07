@@ -49,9 +49,6 @@ class MainLobbyActivity : AppCompatActivity() {
 
     lateinit var waiting : ProgressDialog
     lateinit var leaving : ProgressDialog
-    lateinit var searchingBattle : ProgressDialog
-
-    var room : RoomDataModel = RoomDataModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -268,8 +265,8 @@ class MainLobbyActivity : AppCompatActivity() {
             when (v) {
                 battle_button -> {
                     title_item_lobby.setText("Battle")
-                    if (::controller.isInitialized){
-                        controller.joinWaitingRoom(player.Owner)
+                    if (::controller.isInitialized) {
+                        controller.leftLobbyToBattle()
                     }
                 }
                 players_button -> {
@@ -326,52 +323,6 @@ class MainLobbyActivity : AppCompatActivity() {
     //-----------LobbyEvent-------------//
 
     val LobbyEvent = object : LobbyStreamEvent {
-
-        override fun onBattleFound(r: RoomDataModel) {
-
-            if (::searchingBattle.isInitialized && searchingBattle.isShowing){
-                searchingBattle.dismiss()
-            }
-
-            room = r
-
-            if (::controller.isInitialized) {
-                controller.leftLobbyToBattle()
-            }
-        }
-
-        override fun onBattleNotFound() {
-
-            if (::searchingBattle.isInitialized && searchingBattle.isShowing){
-                searchingBattle.dismiss()
-            }
-
-            AlertDialog.Builder(context)
-                .setTitle("Battle Not Found")
-                .setMessage("no matching opponend found")
-                .setPositiveButton("Try Again") { dialog, which ->
-                    if (::controller.isInitialized){
-                        controller.joinWaitingRoom(player.Owner)
-                    }
-                    dialog.dismiss()
-                }
-                .setNegativeButton("Back",{dialog,pos ->
-                    dialog.dismiss()
-                })
-                .setCancelable(false)
-                .create()
-                .show()
-        }
-
-        override fun onJoinWaitingRoom() {
-            searchingBattle  = ProgressDialog.show(context,"","Searching for opponent....")
-            searchingBattle.show()
-        }
-
-        override fun onLeftWaitingRoom() {
-            Toast.makeText(context,"you left from searching battle",Toast.LENGTH_SHORT).show()
-        }
-
 
         override fun onGetPlayerData(p: PlayerWithCardsModel) {
 
@@ -523,8 +474,7 @@ class MainLobbyActivity : AppCompatActivity() {
 
         override fun onLeftLobbyToBattle() {
 
-            val intent = Intent(context,RoomBattle::class.java)
-            intent.putExtra("room",room)
+            val intent = Intent(context,QueueActivity::class.java)
             startActivity(intent)
 
             finish()

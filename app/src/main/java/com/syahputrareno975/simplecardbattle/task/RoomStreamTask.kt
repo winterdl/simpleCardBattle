@@ -127,6 +127,8 @@ class RoomStreamTask : AsyncTask<Void,Void,Boolean>{
                 .build())
 
 
+            roomStreamEvent.onConnected(controller)
+
             while (!holder.stop){
                 // infinite loop
             }
@@ -149,18 +151,12 @@ class RoomStreamTask : AsyncTask<Void,Void,Boolean>{
                     roomStreamEvent.onCountDown(holder.event!!.countDown)
                 }
                 cardBattle.CardBattle.roomStream.EventCase.PLAYERJOIN -> {
-                    val p = toPlayerWithCardsModel(holder.event!!.playerJoin).Owner
-                    if (p.Id == player.Owner.Id) {
-                        roomStreamEvent.onConnected(controller)
-                    }
                     roomStreamEvent.onPlayerJoin(toPlayerWithCardsModel(holder.event!!.playerJoin).Owner)
                 }
                 cardBattle.CardBattle.roomStream.EventCase.PLAYERLEFT -> {
                     val p = toPlayerWithCardsModel(holder.event!!.playerLeft).Owner
-                    if (p.Id == player.Owner.Id) {
-                        holder.stop = true
-                        holder.left = true
-                    }
+                    holder.stop = p.Id == player.Owner.Id
+                    holder.left = p.Id == player.Owner.Id
                     roomStreamEvent.onPlayerLeft(p)
                 }
                 cardBattle.CardBattle.roomStream.EventCase.ONROOMUPDATE -> {
@@ -172,6 +168,10 @@ class RoomStreamTask : AsyncTask<Void,Void,Boolean>{
                 cardBattle.CardBattle.roomStream.EventCase.ONWINNER -> {
                     holder.stop = true
                     roomStreamEvent.onWinner(toPlayerModel(holder.event!!.onWinner))
+                }
+                cardBattle.CardBattle.roomStream.EventCase.ONDRAW -> {
+                    holder.stop = true
+                    roomStreamEvent.onDraw()
                 }
                 cardBattle.CardBattle.roomStream.EventCase.DEPLOYCARD -> {
 
@@ -210,6 +210,7 @@ class RoomStreamTask : AsyncTask<Void,Void,Boolean>{
 
         if (holder.left) {
             roomStreamEvent.onLeft()
+            return
         }
 
         roomStreamEvent.onDisconnected()

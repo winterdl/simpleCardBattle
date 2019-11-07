@@ -74,18 +74,6 @@ class LobbyStreamTask : AsyncTask<Void, Void, Boolean> {
         }
 
         controller = object : LobbyStreamController {
-            override fun joinWaitingRoom(p: PlayerModel) {
-                request.onNext(CardBattle.lobbyStream.newBuilder()
-                    .setOnjoinWaitingRoom(toPlayerModelGRPC(p))
-                    .build())
-            }
-
-            override fun leftWaitingRoom(p: PlayerModel) {
-                request.onNext(CardBattle.lobbyStream.newBuilder()
-                    .setOnLeftWaitingRoom(toPlayerModelGRPC(p))
-                    .build())
-            }
-
             override fun leftLobbyToBattle() {
                 holder.leftLobbyToBattle = true
                 holder.stop = true
@@ -266,18 +254,6 @@ class LobbyStreamTask : AsyncTask<Void, Void, Boolean> {
                 }
                 CardBattle.lobbyStream.EventCase.REMOVECARDFROMDECK -> {
                     lobbyStreamEvent.onPlayerCardUpdated()
-                }
-                CardBattle.lobbyStream.EventCase.ONJOINWAITINGROOM -> {
-                    lobbyStreamEvent.onJoinWaitingRoom()
-                }
-                CardBattle.lobbyStream.EventCase.ONLEFTWAITINGROOM -> {
-                    lobbyStreamEvent.onLeftWaitingRoom()
-                }
-                CardBattle.lobbyStream.EventCase.ONBATTLEFOUND -> {
-                    lobbyStreamEvent.onBattleFound(toRoomModel(holder.event!!.onBattleFound))
-                }
-                CardBattle.lobbyStream.EventCase.ONBATTLENOTFOUND -> {
-                    lobbyStreamEvent.onBattleNotFound()
                 }
                 else -> {
 

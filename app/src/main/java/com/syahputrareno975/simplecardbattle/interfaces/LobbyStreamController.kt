@@ -17,6 +17,4 @@ interface LobbyStreamController {
     fun removeCardFromDeck(p: PlayerModel,c : CardModel)
     fun buyCardFromShop(p: PlayerModel,c : CardModel)
     fun sellCardToShop(p: PlayerModel,c : CardModel)
-    fun joinWaitingRoom(p : PlayerModel)
-    fun leftWaitingRoom(p : PlayerModel)
 }
