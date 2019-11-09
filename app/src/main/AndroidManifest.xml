@@ -12,9 +12,12 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".ui.activity.QueueActivity"></activity>
+        <activity android:name=".ui.activity.ShopActivity"></activity>
+        <activity android:name=".ui.activity.QueueActivity" />
         <activity android:name=".ui.activity.RoomBattle" />
-        <activity android:name=".ui.activity.Login">
+        <activity
+            android:name=".ui.activity.Login"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

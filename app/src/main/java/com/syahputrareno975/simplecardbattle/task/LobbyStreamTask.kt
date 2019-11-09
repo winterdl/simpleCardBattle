@@ -74,46 +74,10 @@ class LobbyStreamTask : AsyncTask<Void, Void, Boolean> {
         }
 
         controller = object : LobbyStreamController {
-            override fun forceQuit() {
+            override fun leftLobby(action: () -> Unit) {
+                holder.actionHolder = action
                 holder.stop = true
-                holder.forceStop = true
-            }
-
-            override fun addDeckSlot(p: PlayerModel, typeSlot: Int) {
-                request.onNext(CardBattle.lobbyStream.newBuilder()
-                    .setOnCardDeckSlot(CardBattle.playerAndSlot.newBuilder()
-                        .setOwner(toPlayerModelGRPC(p))
-                        .setSlotType(typeSlot)
-                        .build())
-                    .build())
-            }
-
-            override fun leftLobbyToBattle() {
-                holder.leftLobbyToBattle = true
-                holder.stop = true
-            }
-
-            override fun leftLobby() {
                 holder.leftLobby = true
-                holder.stop = true
-            }
-
-            override fun buyCardFromShop(p: PlayerModel, c: CardModel) {
-                request.onNext(CardBattle.lobbyStream.newBuilder()
-                    .setOnBuyCard(CardBattle.playerAndCard.newBuilder()
-                        .setClient(toPlayerModelGRPC(p))
-                        .setCardData(toCardModelGRPC(c))
-                        .build())
-                    .build())
-            }
-
-            override fun sellCardToShop(p: PlayerModel, c: CardModel) {
-                request.onNext(CardBattle.lobbyStream.newBuilder()
-                    .setOnSellCard(CardBattle.playerAndCard.newBuilder()
-                        .setClient(toPlayerModelGRPC(p))
-                        .setCardData(toCardModelGRPC(c))
-                        .build())
-                    .build())
             }
 
             override fun addCardToDeck(p: PlayerModel, c: CardModel) {
@@ -140,12 +104,6 @@ class LobbyStreamTask : AsyncTask<Void, Void, Boolean> {
                     .build())
             }
 
-            override fun getAllRoom() {
-                request.onNext(CardBattle.lobbyStream.newBuilder()
-                    .setGetAllRooms(toAllRoomModelGRPC(AllRoomModel()))
-                    .build())
-            }
-
             override fun getOnePlayer(id: String) {
                 val p = PlayerModel()
                 p.Id = id
@@ -154,24 +112,12 @@ class LobbyStreamTask : AsyncTask<Void, Void, Boolean> {
                     .build())
             }
 
-            override fun getOneRoom(idRoom: String) {
-                val room = RoomDataModel()
-                room.Id = idRoom
-                request.onNext(CardBattle.lobbyStream.newBuilder()
-                    .setGetOneRoom(toRoomModelGRPC(room))
-                    .build())
-            }
-
-            override fun getAllCardInShop(p: PlayerModel) {
-                request.onNext(CardBattle.lobbyStream.newBuilder()
-                    .setAllCardInShopping(toAllCardModelGRPC(AllCardModel()))
-                    .build())
-            }
-
-            override fun leftGame(p: PlayerModel) {
+            override fun leftGame(p: PlayerModel,action: () -> Unit) {
+                holder.actionHolder = action
                 request.onNext(CardBattle.lobbyStream.newBuilder()
                     .setPlayerLeft(toPlayerModelGRPC(p))
                     .build())
+
             }
 
             override fun getMyPlayerData(id: String) {
@@ -182,7 +128,6 @@ class LobbyStreamTask : AsyncTask<Void, Void, Boolean> {
                     .build())
             }
         }
-
     }
 
     val holder = Holder()
@@ -221,21 +166,6 @@ class LobbyStreamTask : AsyncTask<Void, Void, Boolean> {
                 CardBattle.lobbyStream.EventCase.PLAYERLEFT -> {
                     lobbyStreamEvent.onPlayerLeft(toPlayerModel(holder.event!!.playerLeft))
                 }
-                CardBattle.lobbyStream.EventCase.CREATEROOM -> {
-                    lobbyStreamEvent.onRoomCreated(toRoomModel(holder.event!!.createRoom))
-                }
-                CardBattle.lobbyStream.EventCase.SHOPREFRESHTIME -> {
-                    lobbyStreamEvent.onShopCountDown(holder.event!!.shopRefreshTime)
-                }
-                CardBattle.lobbyStream.EventCase.SHOPREFRESH -> {
-                    lobbyStreamEvent.onShopRefreshed()
-                }
-                CardBattle.lobbyStream.EventCase.GETONEROOM -> {
-                    lobbyStreamEvent.onGetOneRoom(toRoomModel(holder.event!!.getOneRoom))
-                }
-                CardBattle.lobbyStream.EventCase.GETALLROOMS -> {
-                    lobbyStreamEvent.onGetAllRoom(toAllRoomModel(holder.event!!.getAllRooms).Rooms)
-                }
                 CardBattle.lobbyStream.EventCase.GETALLPLAYERS -> {
                     lobbyStreamEvent.onGetAllPlayer(toAllPlayerModel(holder.event!!.getAllPlayers).Players)
                 }
@@ -247,21 +177,11 @@ class LobbyStreamTask : AsyncTask<Void, Void, Boolean> {
                 }
                 CardBattle.lobbyStream.EventCase.PLAYERSUCCESSLEFT -> {
                     holder.stop = true
+                    holder.leftLobby = true
                     lobbyStreamEvent.onPlayerSuccessLeft()
                 }
                 CardBattle.lobbyStream.EventCase.ONEPLAYERWITHCARDS -> {
                     lobbyStreamEvent.onGetPlayerData(toPlayerWithCardsModel(holder.event!!.onePlayerWithCards))
-                }
-                CardBattle.lobbyStream.EventCase.ALLCARDINSHOPPING -> {
-                    lobbyStreamEvent.onAllCardInShop(toAllCardModel(holder.event!!.allCardInShopping).Cards)
-                }
-                CardBattle.lobbyStream.EventCase.ONBUYCARD -> {}
-                CardBattle.lobbyStream.EventCase.ONCARDBOUGHT -> {
-                    lobbyStreamEvent.onCardBought(holder.event!!.onCardBought)
-                }
-                CardBattle.lobbyStream.EventCase.ONSELLCARD -> {}
-                CardBattle.lobbyStream.EventCase.ONCARDSOLD -> {
-                    lobbyStreamEvent.onCardSold(holder.event!!.onCardSold)
                 }
                 CardBattle.lobbyStream.EventCase.ADDCARDTODECK -> {
                     lobbyStreamEvent.onPlayerCardUpdated()
@@ -269,12 +189,7 @@ class LobbyStreamTask : AsyncTask<Void, Void, Boolean> {
                 CardBattle.lobbyStream.EventCase.REMOVECARDFROMDECK -> {
                     lobbyStreamEvent.onPlayerCardUpdated()
                 }
-                CardBattle.lobbyStream.EventCase.ONSUCCESSADDSLOT -> {
-                    lobbyStreamEvent.onAddCardSlot(holder.event!!.onSuccessAddSlot)
-                }
-                CardBattle.lobbyStream.EventCase.ONCARDDECKSLOT -> {
 
-                }
                 CardBattle.lobbyStream.EventCase.EXCMESSAGE -> {
                     lobbyStreamEvent.onException(holder.event!!.excMessage.exceptionMessage,holder.event!!.excMessage.exceptionFlag,controller)
                 }
@@ -300,28 +215,15 @@ class LobbyStreamTask : AsyncTask<Void, Void, Boolean> {
             return
         }
 
-        if (holder.leftLobbyToBattle){
-            lobbyStreamEvent.onLeftLobbyToBattle()
-            return
-        }
-
         if (holder.leftLobby){
-            lobbyStreamEvent.onLeftLobby()
-            return
+            holder.actionHolder.invoke()
         }
-
-        if (holder.forceStop){
-            lobbyStreamEvent.onForceQuit()
-            return
-        }
-
 
         lobbyStreamEvent.onDisconnected()
     }
 
     class Holder {
-        var forceStop = false
-        var leftLobbyToBattle = false
+        var actionHolder : () -> Unit = {}
         var leftLobby = false
         var stop = false
         var event : CardBattle.lobbyStream? = null

@@ -39,14 +39,7 @@ class MainLobbyActivity : AppCompatActivity() {
     lateinit var adapterDeckProfile : AdapterCard
     lateinit var adapterReserveProfile : AdapterCard
 
-
-    var cardShop = ArrayList<CardModel>()
-    lateinit var adapterShop : AdapterCard
-    lateinit var adapterReserve : AdapterCard
-
-
     lateinit var controller: LobbyStreamController
-
 
     lateinit var waiting : ProgressDialog
     lateinit var leaving : ProgressDialog
@@ -64,14 +57,11 @@ class MainLobbyActivity : AppCompatActivity() {
         this.context = this@MainLobbyActivity
         IntentData = intent
 
-        player = SerializableSave(context, SerializableSave.userDataFileSessionName).load() as PlayerWithCardsModel
+         player = SerializableSave(context, SerializableSave.userDataFileSessionName).load() as PlayerWithCardsModel
 
-        layout_shoping.visibility = View.GONE
         layout_profile.visibility = View.GONE
         layout_main_menu.visibility = View.VISIBLE
 
-        slot_tab_shop_layout.visibility = View.GONE
-        card_tab_shop_layout.visibility = View.VISIBLE
 
         waiting = ProgressDialog.show(context,"","Connecting....")
 
@@ -86,170 +76,14 @@ class MainLobbyActivity : AppCompatActivity() {
         add_card_to_deck.setOnClickListener(onMenuProfileClick)
         card_info_in_profile.setOnClickListener(onMenuProfileClick)
 
-        shop_back_to_main_menu.setOnClickListener(onMenuShopClick)
-        buy_card.setOnClickListener(onMenuShopClick)
-        sell_card.setOnClickListener(onMenuShopClick)
-        card_info_in_shop.setOnClickListener(onMenuShopClick)
-        add_deck_slot.setOnClickListener(onMenuShopClick)
-        add_reserve_slot.setOnClickListener(onMenuShopClick)
-        card_tab_shop.setOnClickListener(onMenuShopClick)
-        slot_tab_shop.setOnClickListener(onMenuShopClick)
 
-        setAdapterListCardInShop()
         setAdapterListCardInProfile()
 
         LobbyStreamTask(player.Owner, NetConfigDefault, LobbyEvent).execute()
         waiting.show()
     }
 
-    //-----------onMenuShopClick-------------//
 
-    val onMenuShopClick = object : View.OnClickListener {
-        override fun onClick(v: View?) {
-            when (v) {
-
-                add_deck_slot -> {
-
-
-                    AlertDialog.Builder(context)
-                        .setTitle("Add Deck Slot")
-                        .setMessage("Are you sure want to buy Deck slot (+1) (Cost : ${120 * player.Owner.MaxDeckSlot})?")
-                        .setPositiveButton("Buy") { dialog, pos ->
-                            if (::controller.isInitialized) {
-                                controller.addDeckSlot(player.Owner,0)
-                            }
-                            dialog.dismiss()
-                        }
-                        .setNegativeButton("Cancel") { dialog, pos ->
-                            dialog.dismiss()
-                        }.create()
-                        .show()
-
-
-                }
-
-                add_reserve_slot -> {
-
-
-                    AlertDialog.Builder(context)
-                        .setTitle("Add Deck Slot")
-                        .setMessage("Are you sure want to buy Reserve slot (+1) (Cost : ${100 * player.Owner.MaxReserveSlot})?")
-                        .setPositiveButton("Buy") { dialog, pos ->
-                            if (::controller.isInitialized) {
-                                controller.addDeckSlot(player.Owner,1)
-                            }
-                            dialog.dismiss()
-                        }
-                        .setNegativeButton("Cancel") { dialog, pos ->
-                            dialog.dismiss()
-                        }.create()
-                        .show()
-
-
-                }
-
-                card_tab_shop -> {
-
-                    slot_tab_shop_layout.visibility = View.GONE
-                    card_tab_shop_layout.visibility = View.VISIBLE
-                }
-
-                slot_tab_shop -> {
-
-                    slot_tab_shop_layout.visibility = View.VISIBLE
-                    card_tab_shop_layout.visibility = View.GONE
-                }
-
-                card_info_in_shop -> {
-                    DialogCardInfo(context,{}).dialog()
-                }
-
-                shop_back_to_main_menu -> {
-
-                    layout_shoping.visibility = View.GONE
-                    layout_main_menu.visibility = View.VISIBLE
-
-                }
-
-                buy_card -> {
-                    cardShop
-
-                    var isSelected = false
-                    var card = CardModel()
-
-                    for (i in cardShop){
-                        isSelected = i.Flag == 1
-                        if (i.Flag == 1){
-                            card = i
-                        }
-                        if (isSelected){
-                            break
-                        }
-                    }
-
-                    if (!isSelected){
-                        Toast.makeText(context,"please select one card to you want to buy!",Toast.LENGTH_SHORT).show()
-                        return
-                    }
-
-                    AlertDialog.Builder(context)
-                        .setTitle(card.Name)
-                        .setMessage("Are you sure want to buy card Level ${card.Level} : ${card.Name} (Cost : ${card.Price})?")
-                        .setPositiveButton("Buy") { dialog, pos ->
-                            if (::controller.isInitialized){
-                                controller.buyCardFromShop(player.Owner,card)
-                            }
-                            dialog.dismiss()
-                        }
-                        .setNegativeButton("Cancel") { dialog, pos ->
-                            dialog.dismiss()
-                        }.create()
-                        .show()
-
-
-                }
-
-                sell_card -> {
-
-                    var isSelected = false
-                    var card = CardModel()
-
-                    for (i in player.Reserve){
-                        isSelected = i.Flag == 1
-                        if (i.Flag == 1){
-                            card = i
-                        }
-                        if (isSelected){
-                            break
-                        }
-                    }
-
-                    if (!isSelected){
-                        Toast.makeText(context,"please select one card to sell!",Toast.LENGTH_SHORT).show()
-                        return
-                    }
-
-
-                    AlertDialog.Builder(context)
-                        .setTitle(card.Name)
-                        .setMessage("Are you sure want to sell card Level ${card.Level} : ${card.Name} (For : ${card.Price})?")
-                        .setPositiveButton("Sell") { dialog, pos ->
-                            if (::controller.isInitialized){
-                                controller.sellCardToShop(player.Owner,card)
-                            }
-                            dialog.dismiss()
-                        }
-                        .setNegativeButton("Cancel") { dialog, pos ->
-                            dialog.dismiss()
-                        }.create()
-                        .show()
-
-                }
-
-            }
-        }
-
-    }
 
     //-----------onMenuProfileClick-------------//
 
@@ -327,9 +161,36 @@ class MainLobbyActivity : AppCompatActivity() {
             when (v) {
                 battle_button -> {
                     title_item_lobby.setText("Battle")
-                    if (::controller.isInitialized) {
-                        controller.getAllRoom()
+                    val battleMenu = ArrayList<RoomDataModel>()
+
+                    val randBattle = RoomDataModel()
+                    randBattle.Id = "RANDOM_BATTLE"
+                    randBattle.RoomName = "Random Battle"
+                    battleMenu.add(randBattle)
+
+                    list_item_lobby.adapter = AdapterRoom(context,R.layout.adapter_room,battleMenu)
+                    list_item_lobby.setOnItemClickListener { parent, view, position, id ->
+                        if (battleMenu.get(position).Id == "RANDOM_BATTLE"){
+                            if (::controller.isInitialized) {
+                                controller.leftLobby(object : ()->Unit{
+                                    override fun invoke() {
+
+                                        // left lobby to battle
+                                        val intent = Intent(context,QueueActivity::class.java)
+                                        startActivity(intent)
+                                        finish()
+                                    }
+                                })
+                            }
+                            return@setOnItemClickListener
+                        }
+
+                        if (::controller.isInitialized){
+                            controller.getOnePlayer(battleMenu.get(position).Id)
+                        }
                     }
+
+
                 }
                 players_button -> {
                     title_item_lobby.setText("Players")
@@ -348,12 +209,17 @@ class MainLobbyActivity : AppCompatActivity() {
                 }
                 shop_button -> {
 
-                    layout_shoping.visibility = View.VISIBLE
-                    layout_main_menu.visibility = View.GONE
-
                     title_item_lobby.setText("Shop")
-                    if (::controller.isInitialized){
-                        controller.getAllCardInShop(player.Owner)
+                    if (::controller.isInitialized) {
+                        controller.leftLobby(object : ()->Unit {
+                            override fun invoke() {
+
+                                val intent = Intent(context,ShopActivity::class.java)
+                                startActivity(intent)
+                                finish()
+
+                            }
+                        })
                     }
                 }
 
@@ -365,7 +231,15 @@ class MainLobbyActivity : AppCompatActivity() {
                         .setPositiveButton("Yes") { dialog, pos ->
                             leaving = ProgressDialog.show(context,"","Leaving....")
                             if (::controller.isInitialized) {
-                                controller.leftGame(player.Owner)
+                                controller.leftGame(player.Owner, object : () -> Unit{
+                                    override fun invoke() {
+                                        if (SerializableSave(context,SerializableSave.userDataFileSessionName).delete()){
+                                            startActivity(Intent(context,Login::class.java))
+                                            finish()
+                                        }
+                                        leaving.dismiss()
+                                    }
+                                })
                             }
                             leaving.show()
                             dialog.dismiss()
@@ -386,7 +260,6 @@ class MainLobbyActivity : AppCompatActivity() {
 
     val LobbyEvent = object : LobbyStreamEvent {
 
-
         override fun onGetPlayerData(p: PlayerWithCardsModel) {
 
             player.copyFromObject(p)
@@ -400,10 +273,6 @@ class MainLobbyActivity : AppCompatActivity() {
 
             adapterDeckProfile.notifyDataSetChanged()
             adapterReserveProfile.notifyDataSetChanged()
-
-            if (::controller.isInitialized){
-                controller.getAllCardInShop(player.Owner)
-            }
 
         }
 
@@ -422,18 +291,6 @@ class MainLobbyActivity : AppCompatActivity() {
             Toast.makeText(context,"${p.Name} hass join",Toast.LENGTH_SHORT).show()
         }
 
-        override fun onShopCountDown(i: Int) {
-            shop_button.text = "Shop"
-            shop_title_bar.text = "Shop (new item added in ${i})"
-        }
-
-        override fun onShopRefreshed() {
-            Toast.makeText(context,"Shop items is updated",Toast.LENGTH_SHORT).show()
-            if (::controller.isInitialized){
-                controller.getAllCardInShop(player.Owner)
-            }
-        }
-
         override fun onGetOnePlayer(p: PlayerModel) {
             Toast.makeText(context,"Player : ${p.Name}",Toast.LENGTH_SHORT).show()
         }
@@ -447,87 +304,10 @@ class MainLobbyActivity : AppCompatActivity() {
                 }
             }
         }
-
-        override fun onRoomCreated(r: RoomDataModel) {
-            Toast.makeText(context,"Room : ${r.RoomName} hass created",Toast.LENGTH_SHORT).show()
-        }
-
-        override fun onGetOneRoom(r: RoomDataModel) {
-            Toast.makeText(context,"Room info : ${r.RoomName}",Toast.LENGTH_SHORT).show()
-        }
-
-        override fun onGetAllRoom(r: ArrayList<RoomDataModel>) {
-
-            val battleMenu = ArrayList<RoomDataModel>()
-
-            val randBattle = RoomDataModel()
-            randBattle.Id = "RANDOM_BATTLE"
-            randBattle.RoomName = "Random Battle"
-            battleMenu.add(randBattle)
-
-            for (i in r){
-                battleMenu.add(i)
-            }
-
-            list_item_lobby.adapter = AdapterRoom(context,R.layout.adapter_room,battleMenu)
-            list_item_lobby.setOnItemClickListener { parent, view, position, id ->
-                if (battleMenu.get(position).Id == "RANDOM_BATTLE"){
-                    if (::controller.isInitialized) {
-                        controller.leftLobbyToBattle()
-                    }
-                    return@setOnItemClickListener
-                }
-
-                if (::controller.isInitialized){
-                    controller.getOnePlayer(battleMenu.get(position).Id)
-                }
-            }
-        }
-
-        override fun onAllCardInShop(cards: ArrayList<CardModel>) {
-
-            cardShop.clear()
-            cardShop.addAll(cards)
-            adapterReserve.notifyDataSetChanged()
-            adapterShop.notifyDataSetChanged()
-
-            player_in_shop_title_bar.setText("${player.Owner.Name}'s Cards : (${player.Reserve.size}/${player.Owner.MaxReserveSlot}) & Cash : ${formater.format(player.Owner.Cash)}")
-
-        }
-
-        override fun onCardBought(success : Boolean) {
-            if (success){
-                if (::controller.isInitialized){
-                    controller.getMyPlayerData(player.Owner.Id)
-                }
-            }
-            Toast.makeText(context,if (success) "card succesfuly bought" else "failed buy card, check your level,cash or slot avaliable",Toast.LENGTH_SHORT).show()
-        }
-
-        override fun onCardSold(success : Boolean) {
-            if (success) {
-                Toast.makeText(context, "card succesfuly sold", Toast.LENGTH_SHORT).show()
-                if (::controller.isInitialized){
-                    controller.getMyPlayerData(player.Owner.Id)
-                }
-            }
-        }
-
-        override fun onAddCardSlot(success: Boolean) {
-            if (::controller.isInitialized && success){
-                Toast.makeText(context,"Card Hass been Slot Added (+1)",Toast.LENGTH_SHORT).show()
-                controller.getMyPlayerData(player.Owner.Id)
-            } else {
-                Toast.makeText(context,"Failed added Card Slot, check your cash",Toast.LENGTH_SHORT).show()
-            }
-        }
-
         override fun onPlayerCardUpdated() {
-
             if (::controller.isInitialized){
                 controller.getMyPlayerData(player.Owner.Id)
             }
-
         }
 
         override fun onError(e: String) {
@@ -555,7 +335,18 @@ class MainLobbyActivity : AppCompatActivity() {
                     // player dont have session in server
                     if (flag == 1) {
                         leaving = ProgressDialog.show(context,"","Save and Quit....")
-                        c.forceQuit()
+                        c.leftLobby(object : ()->Unit {
+                            override fun invoke() {
+
+                                // go back to login
+                                // to start login again
+                                if (SerializableSave(context,SerializableSave.userDataFileSessionName).delete()){
+                                    startActivity(Intent(context,Login::class.java))
+                                    finish()
+                                }
+                                leaving.dismiss()
+                            }
+                        })
                         leaving.show()
                     }
                     dialog.dismiss()
@@ -574,34 +365,7 @@ class MainLobbyActivity : AppCompatActivity() {
         }
 
         override fun onDisconnected() {
-            if (SerializableSave(context,SerializableSave.userDataFileSessionName).delete()){
-                startActivity(Intent(context,Login::class.java))
-                finish()
-            }
-            leaving.dismiss()
-        }
 
-        override fun onLeftLobby() {
-            if (SerializableSave(context,SerializableSave.userDataFileSessionName).save(player)){
-                finish()
-            }
-            leaving.dismiss()
-        }
-
-        override fun onLeftLobbyToBattle() {
-
-            val intent = Intent(context,QueueActivity::class.java)
-            startActivity(intent)
-
-            finish()
-        }
-
-        override fun onForceQuit() {
-            if (SerializableSave(context,SerializableSave.userDataFileSessionName).delete()){
-                startActivity(Intent(context,Login::class.java))
-                finish()
-            }
-            leaving.dismiss()
         }
     }
 
@@ -615,7 +379,14 @@ class MainLobbyActivity : AppCompatActivity() {
 
             leaving = ProgressDialog.show(context,"","Save and Quit....")
             if (::controller.isInitialized) {
-                controller.leftLobby()
+                controller.leftLobby(object : ()->Unit {
+                    override fun invoke() {
+                        if (SerializableSave(context,SerializableSave.userDataFileSessionName).save(player)){
+                            finish()
+                        }
+                        leaving.dismiss()
+                    }
+                })
             }
             leaving.show()
 
@@ -653,39 +424,5 @@ class MainLobbyActivity : AppCompatActivity() {
 
         list_card_reseve.adapter = adapterReserveProfile
         list_card_reseve.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-
-
-    }
-
-    //-----------setAdapterListCardInShop()-------------//
-
-    fun setAdapterListCardInShop(){
-
-        adapterShop = AdapterCard(context, cardShop)
-        adapterShop.setOnCardClick { card ,pos ->
-            for (i in  cardShop) {
-                i.Flag = 0
-            }
-            cardShop.get(pos).Flag = 1
-            adapterShop.notifyDataSetChanged()
-        }
-
-        list_card_shop.adapter = adapterShop
-        list_card_shop.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-
-
-        adapterReserve = AdapterCard(context,player.Reserve)
-        adapterReserve.setOnCardClick { card,pos ->
-            for (i in player.Reserve) {
-                i.Flag = 0
-            }
-            player.Reserve.get(pos).Flag = 1
-            adapterReserve.notifyDataSetChanged()
-        }
-
-        list_car_player_reserve_card_in_shop.adapter = adapterReserve
-        list_car_player_reserve_card_in_shop.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-
-
     }
 }
