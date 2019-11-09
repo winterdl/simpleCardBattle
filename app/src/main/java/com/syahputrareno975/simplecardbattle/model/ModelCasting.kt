@@ -11,13 +11,15 @@ import com.syahputrareno975.simplecardbattle.model.playerBattleResult.PlayerBatt
 import com.syahputrareno975.simplecardbattle.model.playerWithCard.PlayerWithCardsModel
 import com.syahputrareno975.simplecardbattle.model.room.AllRoomModel
 import com.syahputrareno975.simplecardbattle.model.room.RoomDataModel
+import com.syahputrareno975.simplecardbattle.model.roomResult.EndResultModel
+import com.syahputrareno975.simplecardbattle.model.roomReward.RoomRewardModel
 
 class ModelCasting {
     companion object {
 
         // player
         fun toPlayerModel(p : CardBattle.player) : PlayerModel {
-            return PlayerModel(p.id, p.name, p.avatar, p.level, p.cash)
+            return PlayerModel(p.id, p.name, p.avatar, p.level, p.cash,p.exp,p.maxExp,p.maxReserveSlot,p.maxDeckSlot)
         }
         fun toPlayerModelGRPC(p : PlayerModel) : CardBattle.player {
             return CardBattle.player.newBuilder()
@@ -26,6 +28,10 @@ class ModelCasting {
                 .setAvatar(p.Avatar)
                 .setLevel(p.Level)
                 .setCash(p.Cash)
+                .setExp(p.Exp)
+                .setMaxExp(p.MaxExp)
+                .setMaxReserveSlot(p.MaxReserveSlot)
+                .setMaxDeckSlot(p.MaxDeckSlot)
                 .build()
         }
         fun toAllPlayerModel(p : CardBattle.allPlayer) : AllPlayerModel {
@@ -78,6 +84,24 @@ class ModelCasting {
                 .build()
         }
 
+        // reward
+
+        fun toRoomRewardModel(p : CardBattle.roomReward) : RoomRewardModel{
+            return RoomRewardModel(toAllCardModel(
+                CardBattle.allCard.newBuilder()
+                    .addAllCards(p.cardRewardList)
+                    .build()
+            ).Cards, p.cashReward, p.expReward)
+        }
+
+        fun toRoomRewardModelGRPC(p  : RoomRewardModel) : CardBattle.roomReward {
+            return CardBattle.roomReward.newBuilder()
+                .addAllCardReward(toAllCardModelGRPC(AllCardModel(p.CardsReward)).cardsList)
+                .setCashReward(p.CashReward)
+                .setExpReward(p.ExpReward)
+                .build()
+        }
+
 
         // room
         fun toRoomModel(p : CardBattle.roomData) : RoomDataModel {
@@ -91,16 +115,11 @@ class ModelCasting {
                ).Players,
                 p.maxPlayer,
                 p.maxPlayerDeck,
-                p.maxDeploment,
+                p.maxCurrentDeployment,
+                p.maxDeployment,
                 p.eachPlayerHealth,
                 p.coolDownTime,
-                toAllCardModel(
-                    CardBattle.allCard.newBuilder()
-                        .addAllCards(p.cardRewardList)
-                        .build()
-                ).Cards,
-                p.cashReward,
-                p.levelReward
+                toRoomRewardModel(p.reward)
             )
         }
         fun toRoomModelGRPC(p : RoomDataModel) : CardBattle.roomData {
@@ -116,13 +135,11 @@ class ModelCasting {
                 )
                 .setMaxPlayer(p.MaxPlayer)
                 .setMaxPlayerDeck(p.MaxPlayerDeck)
-                .setMaxDeploment(p.MaxDeploment)
+                .setMaxCurrentDeployment(p.MaxCurrentDeployment)
+                .setMaxDeployment(p.MaxDeploment)
                 .setEachPlayerHealth(p.EachPlayerHealth)
                 .setCoolDownTime(p.CoolDownTime)
-                .addAllCardReward(toAllCardModelGRPC(
-                    AllCardModel(p.CardReward)
-                ).cardsList)
-                .setLevelReward(p.LevelReward)
+                .setReward(toRoomRewardModelGRPC(p.Reward))
                 .build()
         }
         fun toAllRoomModel(p : CardBattle.allRoom) : AllRoomModel {
@@ -162,9 +179,7 @@ class ModelCasting {
                         .addAllCards(p.deployedList)
                         .build()
                 ).Cards,
-                p.hp,
-                p.attackPower,
-                p.damageReceive
+                p.hp
             )
         }
 
@@ -175,8 +190,6 @@ class ModelCasting {
                 .addAllDeployed(toAllCardModelGRPC(AllCardModel(p.Deployed)).cardsList)
                 .addAllReserve(toAllCardModelGRPC(AllCardModel(p.Reserve)).cardsList)
                 .setHp(p.Hp)
-                .setDamageReceive(p.DamageReceive)
-                .setDamageReceive(p.DamageReceive)
                 .build()
         }
 
@@ -201,13 +214,15 @@ class ModelCasting {
         }
 
         fun toPlayerBattleResultModelModel(p : CardBattle.playerBattleResult) : PlayerBattleResultModel{
-            return PlayerBattleResultModel(toPlayerModel(p.owner),p.damageReceive)
+            return PlayerBattleResultModel(toPlayerModel(p.owner),p.damageReceive,p.enemyAtk,p.ownerDef)
         }
 
         fun toPlayerBattleResultModelModelGRPC(p : PlayerBattleResultModel) : CardBattle.playerBattleResult{
            return CardBattle.playerBattleResult.newBuilder()
                .setOwner(toPlayerModelGRPC(p.Owner))
                .setDamageReceive(p.DamageReceive)
+               .setEnemyAtk(p.EnemyAtk)
+               .setOwnerDef(p.OwnerDef)
                .build()
         }
 
@@ -226,6 +241,25 @@ class ModelCasting {
             }
             return CardBattle.allPlayerBattleResult.newBuilder()
                 .addAllResults(results)
+                .build()
+        }
+
+        fun toEndResultModel(p : CardBattle.endResult) : EndResultModel{
+            return EndResultModel(
+                toPlayerModel(p.winner),
+                toAllPlayerBattleResultModelModel(
+                    CardBattle.allPlayerBattleResult.newBuilder()
+                        .addAllResults(p.allBattleResultList).build()).Results,
+                p.flagResult,
+                toRoomRewardModel(p.reward))
+        }
+        fun toEndResultModelGRPC(p : EndResultModel) : CardBattle.endResult {
+            return CardBattle.endResult.newBuilder()
+                .setWinner(toPlayerModelGRPC(p.Winner))
+                .addAllAllBattleResult(
+                    toAllPlayerBattleResultModelModelGRPC( AllPlayerBattleResultModel(p.allBattleResult)).resultsList)
+                .setReward(toRoomRewardModelGRPC(p.Reward))
+                .setFlagResult(p.FlagResult)
                 .build()
         }
     }

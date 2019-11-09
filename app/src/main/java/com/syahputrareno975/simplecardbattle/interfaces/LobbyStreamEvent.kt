@@ -18,6 +18,7 @@ interface LobbyStreamEvent {
     fun onAllCardInShop(c : ArrayList<CardModel>)
     fun onCardBought(success : Boolean)
     fun onCardSold(success : Boolean)
+    fun onAddCardSlot(success : Boolean)
     fun onPlayerCardUpdated()
     fun onGetPlayerData(p : PlayerWithCardsModel)
     fun onError(e : String)
@@ -26,4 +27,6 @@ interface LobbyStreamEvent {
     fun onLeftLobby()
     fun onLeftLobbyToBattle()
     fun onDisconnected()
+    fun onForceQuit()
+    fun onException(e : String,flag : Int,c : LobbyStreamController)
 }

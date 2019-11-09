@@ -19,6 +19,7 @@ import com.syahputrareno975.simplecardbattle.model.player.PlayerModel
 import com.syahputrareno975.simplecardbattle.model.playerWithCard.PlayerWithCardsModel
 import com.syahputrareno975.simplecardbattle.model.room.RoomDataModel
 import com.syahputrareno975.simplecardbattle.task.LobbyStreamTask
+import com.syahputrareno975.simplecardbattle.task.RoomStreamTask
 import com.syahputrareno975.simplecardbattle.ui.dialog.DialogCardInfo
 import com.syahputrareno975.simplecardbattle.util.NetDefault.Companion.NetConfigDefault
 import com.syahputrareno975.simplecardbattle.util.SerializableSave
@@ -26,7 +27,7 @@ import com.syahputrareno975.simpleuno.adapter.AdapterCard
 import com.syahputrareno975.simpleuno.adapter.AdapterPlayer
 import com.syahputrareno975.simpleuno.adapter.AdapterRoom
 import kotlinx.android.synthetic.main.activity_lobby.*
-
+import java.text.DecimalFormat
 
 
 class MainLobbyActivity : AppCompatActivity() {
@@ -50,6 +51,8 @@ class MainLobbyActivity : AppCompatActivity() {
     lateinit var waiting : ProgressDialog
     lateinit var leaving : ProgressDialog
 
+    val formater = DecimalFormat("##,###")
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_lobby)
@@ -66,6 +69,9 @@ class MainLobbyActivity : AppCompatActivity() {
         layout_shoping.visibility = View.GONE
         layout_profile.visibility = View.GONE
         layout_main_menu.visibility = View.VISIBLE
+
+        slot_tab_shop_layout.visibility = View.GONE
+        card_tab_shop_layout.visibility = View.VISIBLE
 
         waiting = ProgressDialog.show(context,"","Connecting....")
 
@@ -84,6 +90,10 @@ class MainLobbyActivity : AppCompatActivity() {
         buy_card.setOnClickListener(onMenuShopClick)
         sell_card.setOnClickListener(onMenuShopClick)
         card_info_in_shop.setOnClickListener(onMenuShopClick)
+        add_deck_slot.setOnClickListener(onMenuShopClick)
+        add_reserve_slot.setOnClickListener(onMenuShopClick)
+        card_tab_shop.setOnClickListener(onMenuShopClick)
+        slot_tab_shop.setOnClickListener(onMenuShopClick)
 
         setAdapterListCardInShop()
         setAdapterListCardInProfile()
@@ -97,6 +107,58 @@ class MainLobbyActivity : AppCompatActivity() {
     val onMenuShopClick = object : View.OnClickListener {
         override fun onClick(v: View?) {
             when (v) {
+
+                add_deck_slot -> {
+
+
+                    AlertDialog.Builder(context)
+                        .setTitle("Add Deck Slot")
+                        .setMessage("Are you sure want to buy Deck slot (+1) (Cost : ${120 * player.Owner.MaxDeckSlot})?")
+                        .setPositiveButton("Buy") { dialog, pos ->
+                            if (::controller.isInitialized) {
+                                controller.addDeckSlot(player.Owner,0)
+                            }
+                            dialog.dismiss()
+                        }
+                        .setNegativeButton("Cancel") { dialog, pos ->
+                            dialog.dismiss()
+                        }.create()
+                        .show()
+
+
+                }
+
+                add_reserve_slot -> {
+
+
+                    AlertDialog.Builder(context)
+                        .setTitle("Add Deck Slot")
+                        .setMessage("Are you sure want to buy Reserve slot (+1) (Cost : ${100 * player.Owner.MaxReserveSlot})?")
+                        .setPositiveButton("Buy") { dialog, pos ->
+                            if (::controller.isInitialized) {
+                                controller.addDeckSlot(player.Owner,1)
+                            }
+                            dialog.dismiss()
+                        }
+                        .setNegativeButton("Cancel") { dialog, pos ->
+                            dialog.dismiss()
+                        }.create()
+                        .show()
+
+
+                }
+
+                card_tab_shop -> {
+
+                    slot_tab_shop_layout.visibility = View.GONE
+                    card_tab_shop_layout.visibility = View.VISIBLE
+                }
+
+                slot_tab_shop -> {
+
+                    slot_tab_shop_layout.visibility = View.VISIBLE
+                    card_tab_shop_layout.visibility = View.GONE
+                }
 
                 card_info_in_shop -> {
                     DialogCardInfo(context,{}).dialog()
@@ -266,7 +328,7 @@ class MainLobbyActivity : AppCompatActivity() {
                 battle_button -> {
                     title_item_lobby.setText("Battle")
                     if (::controller.isInitialized) {
-                        controller.leftLobbyToBattle()
+                        controller.getAllRoom()
                     }
                 }
                 players_button -> {
@@ -324,13 +386,17 @@ class MainLobbyActivity : AppCompatActivity() {
 
     val LobbyEvent = object : LobbyStreamEvent {
 
+
         override fun onGetPlayerData(p: PlayerWithCardsModel) {
 
             player.copyFromObject(p)
 
             player_name.setText("Name : ${player.Owner.Name}")
-            player_cash.setText("Cash : ${player.Owner.Cash}")
-            player_level.setText("Level : ${player.Owner.Level}")
+            player_cash.setText("Cash : ${formater.format(player.Owner.Cash)}")
+            player_level.setText("Level : ${formater.format(player.Owner.Level)}")
+            player_exp.setText("Exp : ${formater.format(player.Owner.Exp)}/${formater.format(player.Owner.MaxExp)}")
+            player_deck.setText("My Deck ${player.Deck.size}/${player.Owner.MaxDeckSlot}")
+            player_reserve.setText("My Card ${player.Reserve.size}/${player.Owner.MaxReserveSlot}")
 
             adapterDeckProfile.notifyDataSetChanged()
             adapterReserveProfile.notifyDataSetChanged()
@@ -342,7 +408,9 @@ class MainLobbyActivity : AppCompatActivity() {
         }
 
         override fun onConnected(p : PlayerModel,c: LobbyStreamController) {
-            waiting.dismiss()
+            if (waiting.isShowing) {
+                waiting.dismiss()
+            }
             controller = c
             player.Owner.Id = p.Id
             if (::controller.isInitialized){
@@ -378,7 +446,6 @@ class MainLobbyActivity : AppCompatActivity() {
                     controller.getOnePlayer(p.get(position).Id)
                 }
             }
-
         }
 
         override fun onRoomCreated(r: RoomDataModel) {
@@ -391,10 +458,28 @@ class MainLobbyActivity : AppCompatActivity() {
 
         override fun onGetAllRoom(r: ArrayList<RoomDataModel>) {
 
-            list_item_lobby.adapter = AdapterRoom(context,android.R.layout.simple_dropdown_item_1line,r)
+            val battleMenu = ArrayList<RoomDataModel>()
+
+            val randBattle = RoomDataModel()
+            randBattle.Id = "RANDOM_BATTLE"
+            randBattle.RoomName = "Random Battle"
+            battleMenu.add(randBattle)
+
+            for (i in r){
+                battleMenu.add(i)
+            }
+
+            list_item_lobby.adapter = AdapterRoom(context,R.layout.adapter_room,battleMenu)
             list_item_lobby.setOnItemClickListener { parent, view, position, id ->
+                if (battleMenu.get(position).Id == "RANDOM_BATTLE"){
+                    if (::controller.isInitialized) {
+                        controller.leftLobbyToBattle()
+                    }
+                    return@setOnItemClickListener
+                }
+
                 if (::controller.isInitialized){
-                    controller.getOnePlayer(r.get(position).Id)
+                    controller.getOnePlayer(battleMenu.get(position).Id)
                 }
             }
         }
@@ -406,7 +491,7 @@ class MainLobbyActivity : AppCompatActivity() {
             adapterReserve.notifyDataSetChanged()
             adapterShop.notifyDataSetChanged()
 
-            player_in_shop_title_bar.setText("${player.Owner.Name}'s Cards : ${player.Reserve.size} & Cash : ${player.Owner.Cash}")
+            player_in_shop_title_bar.setText("${player.Owner.Name}'s Cards : (${player.Reserve.size}/${player.Owner.MaxReserveSlot}) & Cash : ${formater.format(player.Owner.Cash)}")
 
         }
 
@@ -416,7 +501,7 @@ class MainLobbyActivity : AppCompatActivity() {
                     controller.getMyPlayerData(player.Owner.Id)
                 }
             }
-            Toast.makeText(context,if (success) "card succesfuly bought" else "failed buy card, check your level or cash",Toast.LENGTH_SHORT).show()
+            Toast.makeText(context,if (success) "card succesfuly bought" else "failed buy card, check your level,cash or slot avaliable",Toast.LENGTH_SHORT).show()
         }
 
         override fun onCardSold(success : Boolean) {
@@ -425,6 +510,15 @@ class MainLobbyActivity : AppCompatActivity() {
                 if (::controller.isInitialized){
                     controller.getMyPlayerData(player.Owner.Id)
                 }
+            }
+        }
+
+        override fun onAddCardSlot(success: Boolean) {
+            if (::controller.isInitialized && success){
+                Toast.makeText(context,"Card Hass been Slot Added (+1)",Toast.LENGTH_SHORT).show()
+                controller.getMyPlayerData(player.Owner.Id)
+            } else {
+                Toast.makeText(context,"Failed added Card Slot, check your cash",Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -447,6 +541,28 @@ class MainLobbyActivity : AppCompatActivity() {
                 .setCancelable(false)
                 .create()
                 .show()
+        }
+        override fun onException(e : String,flag : Int,c : LobbyStreamController) {
+
+            if (waiting.isShowing) {
+                waiting.dismiss()
+            }
+
+            AlertDialog.Builder(context)
+                .setTitle("Something Wrong Happend")
+                .setMessage(e)
+                .setPositiveButton("Ok") { dialog, which ->
+                    // player dont have session in server
+                    if (flag == 1) {
+                        leaving = ProgressDialog.show(context,"","Save and Quit....")
+                        c.forceQuit()
+                        leaving.show()
+                    }
+                    dialog.dismiss()
+                }
+                .create()
+                .show()
+
         }
 
         override fun onPlayerLeft(p: PlayerModel) {
@@ -480,6 +596,13 @@ class MainLobbyActivity : AppCompatActivity() {
             finish()
         }
 
+        override fun onForceQuit() {
+            if (SerializableSave(context,SerializableSave.userDataFileSessionName).delete()){
+                startActivity(Intent(context,Login::class.java))
+                finish()
+            }
+            leaving.dismiss()
+        }
     }
 
 

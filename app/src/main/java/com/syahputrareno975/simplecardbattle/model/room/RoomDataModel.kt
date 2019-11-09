@@ -2,20 +2,20 @@ package com.syahputrareno975.simplecardbattle.model.room
 
 import com.syahputrareno975.simplecardbattle.model.card.CardModel
 import com.syahputrareno975.simplecardbattle.model.playerWithCard.PlayerWithCardsModel
+import com.syahputrareno975.simplecardbattle.model.roomReward.RoomRewardModel
 import java.io.Serializable
 
 class RoomDataModel : Serializable {
     var Id = ""
     var RoomName = ""
     var Players = ArrayList<PlayerWithCardsModel>()
-    var MaxPlayer = 5
-    var MaxPlayerDeck = 6
-    var MaxDeploment = 7
-    var EachPlayerHealth = 8
-    var CoolDownTime = 9
-    var CardReward = ArrayList<CardModel>()
-    var CashReward = 11
-    var LevelReward = 12
+    var MaxPlayer = 0
+    var MaxPlayerDeck = 0
+    var MaxCurrentDeployment = 0
+    var MaxDeploment = 0
+    var EachPlayerHealth : Long = 0
+    var CoolDownTime = 0
+    var Reward : RoomRewardModel = RoomRewardModel()
 
 
     constructor()
@@ -25,12 +25,11 @@ class RoomDataModel : Serializable {
         Players: ArrayList<PlayerWithCardsModel>,
         MaxPlayer: Int,
         MaxPlayerDeck: Int,
+        maxCurrentDeployment : Int,
         MaxDeploment: Int,
-        EachPlayerHealth: Int,
+        EachPlayerHealth: Long,
         CoolDownTime: Int,
-        CardReward: ArrayList<CardModel>,
-        CashReward: Int,
-        LevelReward: Int
+        reward : RoomRewardModel
     ) {
         this.Id = id
         this.RoomName = RoomName
@@ -40,11 +39,9 @@ class RoomDataModel : Serializable {
         this.MaxDeploment = MaxDeploment
         this.EachPlayerHealth = EachPlayerHealth
         this.CoolDownTime = CoolDownTime
-        this.CardReward = CardReward
-        this.CashReward = CashReward
-        this.LevelReward = LevelReward
+        this.Reward = reward
+        this.MaxCurrentDeployment = maxCurrentDeployment
     }
-
 
 }
 

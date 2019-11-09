@@ -7,9 +7,9 @@ class CardModel : Serializable {
     var Image = ""
     var Name = ""
     var Level  = 0
-    var Atk  = 0
-    var Def  = 0
-    var Price = 0
+    var Atk: Long  = 0
+    var Def: Long  = 0
+    var Price: Long = 0
     var Color = 0
 
     var Flag = 0
@@ -22,9 +22,9 @@ class CardModel : Serializable {
         Image: String,
         Name: String,
         Level: Int,
-        Atk: Int,
-        Def: Int,
-        Price: Int,
+        Atk: Long,
+        Def: Long,
+        Price: Long,
         Color: Int
     ) {
         this.Id = Id

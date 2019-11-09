@@ -20,6 +20,7 @@ import com.syahputrareno975.simplecardbattle.model.player.PlayerModel
 import com.syahputrareno975.simplecardbattle.model.playerBattleResult.AllPlayerBattleResultModel
 import com.syahputrareno975.simplecardbattle.model.playerWithCard.PlayerWithCardsModel
 import com.syahputrareno975.simplecardbattle.model.room.RoomDataModel
+import com.syahputrareno975.simplecardbattle.model.roomResult.EndResultModel
 import com.syahputrareno975.simplecardbattle.task.RoomStreamTask
 import com.syahputrareno975.simplecardbattle.ui.dialog.DialogCardDeck
 import com.syahputrareno975.simplecardbattle.util.NetDefault.Companion.NetConfigDefault
@@ -30,6 +31,7 @@ import com.syahputrareno975.simplecardbattle.util.RoomRule.Companion.getTotalDef
 import com.syahputrareno975.simplecardbattle.util.SerializableSave
 import com.syahputrareno975.simpleuno.adapter.AdapterCard
 import kotlinx.android.synthetic.main.activity_room_battle.*
+import java.text.DecimalFormat
 
 class RoomBattle : AppCompatActivity() {
     lateinit var context: Context
@@ -39,6 +41,10 @@ class RoomBattle : AppCompatActivity() {
     lateinit var room: RoomDataModel
 
     lateinit var controler : RoomStreamEventController
+
+    lateinit var resultBattle : AlertDialog
+
+    val formater = DecimalFormat("##,###")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,38 +64,123 @@ class RoomBattle : AppCompatActivity() {
 
         RoomStreamTask(player,room,NetConfigDefault,onRoomEvent).execute()
 
+        brief_layout.visibility = View.VISIBLE
         main_game_layout.visibility = View.GONE
-        waiting_text.visibility = View.VISIBLE
+        victory_layout.visibility = View.GONE
+
+        setRewardBrief(room)
     }
 
     //-----------setRoomStatus(..)-------------//
 
+    fun setVictoryLayoutValue(r : EndResultModel){
+        val adapter = AdapterCard(context,r.Reward.CardsReward)
+        adapter.setOnCardClick { cardModel, i -> }
+
+        claim_cards.adapter = adapter
+        claim_cards.layoutManager = LinearLayoutManager(context,LinearLayoutManager.HORIZONTAL,false)
+
+        if (r.Reward.CardsReward.isEmpty()){
+            no_reward_card.text = "Failed Receive Cards, no slot Avaliable!"
+        }
+
+        no_reward_card.visibility = if (r.Reward.CardsReward.isEmpty()) View.VISIBLE else View.GONE
+        claim_cards.visibility = if (r.Reward.CardsReward.isEmpty()) View.GONE else View.VISIBLE
+
+        claim_cash.setText("Cash Receive : ${formater.format(r.Reward.CashReward)}")
+        claim_exp.setText("Exp Receive : ${formater.format(r.Reward.ExpReward)}")
+        victory_title.setText("Victory")
+        victory_detail.setText(if (r.FlagResult == 0) "Enemy Hp Is Reduce to 0" else if (r.FlagResult == 1) "You Have More Hp" else "Receive Rewards")
+        main_menu_button.setOnClickListener(OnMainMenuPress)
+    }
+
+    fun setDefeatLayoutValue(r : EndResultModel){
+
+        no_reward_card.visibility = View.VISIBLE
+        claim_cards.visibility = View.GONE
+
+        claim_cash.setText("Cash Receive : 0")
+        claim_exp.setText("Exp Receive : 0")
+        victory_title.setText("Defeated")
+        victory_detail.setText(if (r.FlagResult == 0) "Your Hp hass been Reduce to 0" else if (r.FlagResult == 1) "Enemy Have More Hp" else "Goodluck next time")
+
+        main_menu_button.setOnClickListener(OnMainMenuPress)
+    }
+
+    fun setDrawLayoutValue(flag : Int){
+
+        no_reward_card.visibility = View.VISIBLE
+        claim_cards.visibility = View.GONE
+
+        claim_cash.setText("Cash Receive : 0")
+        claim_exp.setText("Exp Receive : 0")
+        victory_title.setText("Draw")
+        victory_detail.setText(if (flag == 2) "All player have same Hp" else "All player have no HP and card left to continue the battle")
+
+        main_menu_button.setOnClickListener(OnMainMenuPress)
+    }
+
+    fun setRewardBrief(r : RoomDataModel) {
+
+        room_name.text = "Welcome to Room ${room.RoomName}"
+
+        val adapter = AdapterCard(context,r.Reward.CardsReward,true)
+        adapter.setOnCardClick { cardModel, i -> }
+
+        card_rewards.adapter = adapter
+        card_rewards.layoutManager = LinearLayoutManager(context,LinearLayoutManager.HORIZONTAL,false)
+
+        cash_rewards.setText("Cash Reward : ${formater.format(r.Reward.CashReward)}")
+        exp_rewards.setText("Exp Reward : ${formater.format(r.Reward.ExpReward)}")
+    }
+
     @SuppressLint("SetTextI18n")
     fun setEnemyStatus(p : PlayerWithCardsModel) {
-        enemy_atk.text = "Atk : ${getTotalAtk(p.Deployed).toString()}"
-        enemy_hp.text = "Hp : ${p.Hp.toString()}"
+        enemy_atk.text = "Atk : ${formater.format(getTotalAtk(p.Deployed))}"
+        enemy_hp.text = "Hp : ${formater.format(p.Hp)}"
         enemy_name.text = p.Owner.Name
-        enemy_def.text = "Def : ${getTotalDef(p.Deployed).toString()}"
+        enemy_def.text = "Def : ${formater.format(getTotalDef(p.Deployed))}"
 
         val adapter = AdapterCard(context,p.Deployed)
         adapter.setOnCardClick { cardModel, i -> }
 
         enemy_deploy_deck.adapter = adapter
         enemy_deploy_deck.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL,false)
+
+        enemy_deployed_total.text = "(${p.Deployed.size}/${room.MaxCurrentDeployment})"
     }
 
     @SuppressLint("SetTextI18n")
     fun setPlayerStatus(p : PlayerWithCardsModel) {
-        player_atk.text = "Atk : ${getTotalAtk(p.Deployed).toString()}"
-        player_hp.text = "Hp : ${p.Hp.toString()}"
+        player_atk.text = "Atk : ${formater.format(getTotalAtk(p.Deployed))}"
+        player_hp.text = "Hp : ${formater.format(p.Hp)}"
         player_name.text = p.Owner.Name
-        player_def.text = "Def : ${getTotalDef(p.Deployed).toString()}"
+        player_def.text = "Def : ${formater.format(getTotalDef(p.Deployed))}"
 
         val adapter = AdapterCard(context,p.Deployed)
         adapter.setOnCardClick { cardModel, i -> }
 
         player_deploy_deck.adapter = adapter
         player_deploy_deck.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL,false)
+
+        player_deployed_total.text = "(${p.Deployed.size}/${room.MaxCurrentDeployment})"
+    }
+
+    fun refreshRoom(r : RoomDataModel){
+        room = r
+        if (r.Players.size >= r.MaxPlayer) {
+            setPlayerStatus(r.Players.get(findPlayer(player.Owner.Id, r)))
+            setEnemyStatus(r.Players.get(findEnemy(player.Owner.Id, r)))
+        }
+
+        brief_layout.visibility = View.GONE
+        main_game_layout.visibility = View.VISIBLE
+    }
+
+    fun dismissDialog() {
+        if (::resultBattle.isInitialized && resultBattle.isShowing) {
+            resultBattle.dismiss()
+        }
     }
 
 
@@ -97,11 +188,26 @@ class RoomBattle : AppCompatActivity() {
 
     val onChooseCard = object : View.OnClickListener {
         override fun onClick(v: View?) {
-            DialogCardDeck(context,room.Players.get(findPlayer(player.Owner.Id,room))) {
+            val player = room.Players.get(findPlayer(player.Owner.Id,room))
+            DialogCardDeck(context,player) {
+                if (player.Deployed.size >= room.MaxCurrentDeployment) {
+                    Toast.makeText(context,"Cannot deploy more cards!",Toast.LENGTH_SHORT).show()
+                    return@DialogCardDeck
+                }
                 if (::controler.isInitialized){
                     controler.deployCard(player.Owner,it)
                 }
             }.dialog()
+        }
+    }
+
+    //-----------clickClaim(..)-------------//
+
+    val OnMainMenuPress = object : View.OnClickListener {
+        override fun onClick(v: View?) {
+            val intent = Intent(context,MainLobbyActivity::class.java)
+            startActivity(intent)
+            finish()
         }
     }
 
@@ -114,7 +220,7 @@ class RoomBattle : AppCompatActivity() {
         }
 
         override fun onPlayerJoin(p: PlayerModel) {
-            Toast.makeText(context,"${p.Name} is join",Toast.LENGTH_SHORT).show()
+            //Toast.makeText(context,"${p.Name} is join",Toast.LENGTH_SHORT).show()
         }
 
         override fun onPlayerLeft(p: PlayerModel) {
@@ -122,89 +228,80 @@ class RoomBattle : AppCompatActivity() {
         }
 
         override fun onRoomUpdate(r: RoomDataModel) {
-            room = r
-            if (r.Players.size >= r.MaxPlayer) {
-                setPlayerStatus(r.Players.get(findPlayer(player.Owner.Id, r)))
-                setEnemyStatus(r.Players.get(findEnemy(player.Owner.Id, r)))
-            }
-
-            main_game_layout.visibility = View.VISIBLE
-            waiting_text.visibility = View.GONE
+            refreshRoom(r)
         }
 
         override fun onCountDown(i: Int) {
-            countdown.text = "Time : ${i}"
+            countdown.text = "Battle in ${i}"
         }
+        override fun onBattleResult(r: AllPlayerBattleResultModel) {
 
-        override fun onResult(r: AllPlayerBattleResultModel) {
+            dismissDialog()
 
             var msg = ""
             for (i in r.Results){
                 if (i.Owner.Id != player.Owner.Id){
                     msg += "Player : ${i.Owner.Name}\n"
-                    msg += "Damage Receive : ${i.DamageReceive}\n\n"
+                    msg += "Damage Receive : ${formater.format(i.DamageReceive)}\n\n"
                 }
                 if (i.Owner.Id == player.Owner.Id){
                     msg += "Player : ${i.Owner.Name}\n"
-                    msg += "Damage Receive : ${i.DamageReceive}\n\n"
+                    msg += "Damage Receive : ${formater.format(i.DamageReceive)}\n\n"
                 }
             }
 
-            AlertDialog.Builder(context)
+            resultBattle = AlertDialog.Builder(context)
                 .setTitle("Result Battle")
                 .setMessage(msg)
                 .setPositiveButton("ok",null)
                 .create()
-                .show()
+
+            resultBattle.show()
 
             if (::controler.isInitialized){
                 controler.getOneRoom(room.Id)
             }
+        }
+
+        override fun onResult(r: EndResultModel) {
+
+            dismissDialog()
+
+            if (player.Owner.Id == r.Winner.Id) {
+                setVictoryLayoutValue(r)
+            } else {
+                setDefeatLayoutValue(r)
+            }
+            brief_layout.visibility = View.GONE
+            main_game_layout.visibility = View.GONE
+            victory_layout.visibility = View.VISIBLE
 
         }
 
-        override fun onWinner(p: PlayerModel) {
+        override fun onDraw(flag: Int) {
 
-            AlertDialog.Builder(context)
-                .setTitle("Winner Of Battle")
-                .setMessage("Winner : ${p.Name}")
-                .setPositiveButton("ok") { dialog, i ->
-                    val intent = Intent(context,MainLobbyActivity::class.java)
-                    startActivity(intent)
-                    finish()
+            dismissDialog()
 
-                    dialog.dismiss()
+            if (flag == 0) {
+
+                Toast.makeText(context,"All player have no HP left, heal and continue the battle",Toast.LENGTH_SHORT).show()
+
+                if (::controler.isInitialized){
+                    controler.getOneRoom(room.Id)
                 }
-                .setCancelable(false)
-                .create()
-                .show()
-        }
-        override fun onDraw() {
 
-            AlertDialog.Builder(context)
-                .setTitle("Draw")
-                .setMessage("All player have no HP left to continue the battle")
-                .setPositiveButton("ok") { dialog, i ->
-                    val intent = Intent(context,MainLobbyActivity::class.java)
-                    startActivity(intent)
-                    finish()
+            } else {
 
-                    dialog.dismiss()
-                }
-                .setCancelable(false)
-                .create()
-                .show()
+                setDrawLayoutValue(flag)
+                brief_layout.visibility = View.GONE
+                main_game_layout.visibility = View.GONE
+                victory_layout.visibility = View.VISIBLE
+            }
+
         }
 
         override fun onGetRoomData(r: RoomDataModel) {
-            room = r
-            if (r.Players.size >= r.MaxPlayer) {
-                setPlayerStatus(r.Players.get(findPlayer(player.Owner.Id, r)))
-                setEnemyStatus(r.Players.get(findEnemy(player.Owner.Id, r)))
-            }
-
-            main_game_layout.visibility = View.VISIBLE
-            waiting_text.visibility = View.GONE
+            refreshRoom(r)
         }
 
         override fun onLeft() {
@@ -215,7 +312,7 @@ class RoomBattle : AppCompatActivity() {
         }
 
         override fun onDisconnected() {
-            Toast.makeText(context,"disconnected",Toast.LENGTH_SHORT).show()
+            Toast.makeText(context,"match finish",Toast.LENGTH_SHORT).show()
         }
 
         override fun onError(s: String) {
@@ -227,6 +324,17 @@ class RoomBattle : AppCompatActivity() {
                     dialog.dismiss()
                 }
                 .setCancelable(false)
+                .create()
+                .show()
+        }
+
+        override fun onException(e: String, flag: Int) {
+            AlertDialog.Builder(context)
+                .setTitle("Something Wrong Happend")
+                .setMessage(e)
+                .setPositiveButton("Ok") { dialog, which ->
+                    dialog.dismiss()
+                }
                 .create()
                 .show()
         }

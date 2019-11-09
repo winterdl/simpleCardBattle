@@ -74,6 +74,20 @@ class LobbyStreamTask : AsyncTask<Void, Void, Boolean> {
         }
 
         controller = object : LobbyStreamController {
+            override fun forceQuit() {
+                holder.stop = true
+                holder.forceStop = true
+            }
+
+            override fun addDeckSlot(p: PlayerModel, typeSlot: Int) {
+                request.onNext(CardBattle.lobbyStream.newBuilder()
+                    .setOnCardDeckSlot(CardBattle.playerAndSlot.newBuilder()
+                        .setOwner(toPlayerModelGRPC(p))
+                        .setSlotType(typeSlot)
+                        .build())
+                    .build())
+            }
+
             override fun leftLobbyToBattle() {
                 holder.leftLobbyToBattle = true
                 holder.stop = true
@@ -255,6 +269,15 @@ class LobbyStreamTask : AsyncTask<Void, Void, Boolean> {
                 CardBattle.lobbyStream.EventCase.REMOVECARDFROMDECK -> {
                     lobbyStreamEvent.onPlayerCardUpdated()
                 }
+                CardBattle.lobbyStream.EventCase.ONSUCCESSADDSLOT -> {
+                    lobbyStreamEvent.onAddCardSlot(holder.event!!.onSuccessAddSlot)
+                }
+                CardBattle.lobbyStream.EventCase.ONCARDDECKSLOT -> {
+
+                }
+                CardBattle.lobbyStream.EventCase.EXCMESSAGE -> {
+                    lobbyStreamEvent.onException(holder.event!!.excMessage.exceptionMessage,holder.event!!.excMessage.exceptionFlag,controller)
+                }
                 else -> {
 
                 }
@@ -287,11 +310,17 @@ class LobbyStreamTask : AsyncTask<Void, Void, Boolean> {
             return
         }
 
+        if (holder.forceStop){
+            lobbyStreamEvent.onForceQuit()
+            return
+        }
+
 
         lobbyStreamEvent.onDisconnected()
     }
 
     class Holder {
+        var forceStop = false
         var leftLobbyToBattle = false
         var leftLobby = false
         var stop = false

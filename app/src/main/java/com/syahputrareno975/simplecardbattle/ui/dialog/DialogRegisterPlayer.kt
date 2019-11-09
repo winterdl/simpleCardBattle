@@ -34,7 +34,7 @@ class DialogRegisterPlayer {
                     Toast.makeText(context,"player name is empty", Toast.LENGTH_SHORT).show()
                     return
                 }
-                onRegister.invoke(PlayerModel("", name.text.toString(), "", 0, 0))
+                onRegister.invoke(PlayerModel("", name.text.toString(), "", 0, 0,0,0,0,0))
                 dialog.dismiss()
             }
 

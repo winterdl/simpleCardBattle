@@ -50,7 +50,7 @@ class Login : AppCompatActivity() {
             val waiting = ProgressDialog.show(context,"","Connecting....")
 
             LoginTask(
-                PlayerModel("",player_name.text.toString(),"",0,0),
+                PlayerModel("",player_name.text.toString(),"",0,0,0,0,0,0),
                 NetConfigDefault
             ) { player, e ->
 
@@ -61,7 +61,7 @@ class Login : AppCompatActivity() {
                         .setTitle("Error")
                         .setMessage("Cannot connect to server, Reason : ${e}")
                         .setPositiveButton("Ok") { dialog, which ->
-                            waiting.show()
+                           dialog.dismiss()
                         }
                         .setCancelable(false)
                         .create()

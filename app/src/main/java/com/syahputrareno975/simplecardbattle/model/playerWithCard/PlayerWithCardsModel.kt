@@ -9,9 +9,7 @@ class PlayerWithCardsModel : Serializable {
     var Deck = ArrayList<CardModel>()
     var Reserve = ArrayList<CardModel>()
     var Deployed = ArrayList<CardModel>()
-    var Hp = 0
-    var AttackPower = 0
-    var DamageReceive = 0
+    var Hp : Long = 0
 
     constructor()
 
@@ -20,17 +18,13 @@ class PlayerWithCardsModel : Serializable {
         Deck: ArrayList<CardModel>,
         Reserve: ArrayList<CardModel>,
         Deployed: ArrayList<CardModel>,
-        Hp: Int,
-        AttackPower: Int,
-        DamageReceive: Int
+        Hp: Long
     ) {
         this.Owner = Owner
         this.Deck = Deck
         this.Reserve = Reserve
         this.Deployed = Deployed
         this.Hp = Hp
-        this.AttackPower = AttackPower
-        this.DamageReceive = DamageReceive
     }
 
 
@@ -46,8 +40,6 @@ class PlayerWithCardsModel : Serializable {
         this.Deployed.addAll(p.Deployed)
 
         this.Hp = p.Hp
-        this.AttackPower = p.AttackPower
-        this.DamageReceive = p.DamageReceive
     }
 
 

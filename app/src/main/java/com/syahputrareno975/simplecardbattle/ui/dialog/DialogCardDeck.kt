@@ -3,6 +3,8 @@ package com.syahputrareno975.simplecardbattle.ui.dialog
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
+import android.view.View
+import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.syahputrareno975.simplecardbattle.R
@@ -31,6 +33,7 @@ class DialogCardDeck {
                 dialog.dismiss()
             }.create()
 
+        val emptyDeck : TextView = v.findViewById(R.id.empty_deck)
         val cards : RecyclerView = v.findViewById(R.id.player_deck)
         val adapter = AdapterCard(context,data.Deck)
         adapter.setOnCardClick { cardModel, i ->
@@ -40,6 +43,9 @@ class DialogCardDeck {
 
         cards.adapter = adapter
         cards.layoutManager = LinearLayoutManager(context,LinearLayoutManager.HORIZONTAL,false)
+
+        emptyDeck.visibility = if (data.Deck.isEmpty()) View.VISIBLE else View.GONE
+        cards.visibility = if (data.Deck.isEmpty()) View.GONE else View.VISIBLE
 
         dialog.setView(v)
         dialog.setCancelable(false)

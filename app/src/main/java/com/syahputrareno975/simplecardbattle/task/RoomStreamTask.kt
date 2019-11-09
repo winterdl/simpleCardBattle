@@ -11,6 +11,7 @@ import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toAllP
 import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toAllPlayerBattleResultModelModelGRPC
 import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toAllPlayerWithCardsModelGRPC
 import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toCardModelGRPC
+import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toEndResultModel
 import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toPlayerModel
 import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toPlayerModelGRPC
 import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toPlayerWithCardsModel
@@ -162,16 +163,16 @@ class RoomStreamTask : AsyncTask<Void,Void,Boolean>{
                 cardBattle.CardBattle.roomStream.EventCase.ONROOMUPDATE -> {
                     roomStreamEvent.onRoomUpdate(toRoomModel(holder.event!!.onRoomUpdate))
                 }
-                cardBattle.CardBattle.roomStream.EventCase.RESULT -> {
-                    roomStreamEvent.onResult(toAllPlayerBattleResultModelModel(holder.event!!.result))
+                cardBattle.CardBattle.roomStream.EventCase.BATTLERESULT -> {
+                    roomStreamEvent.onBattleResult(toAllPlayerBattleResultModelModel(holder.event!!.battleResult))
                 }
-                cardBattle.CardBattle.roomStream.EventCase.ONWINNER -> {
+                cardBattle.CardBattle.roomStream.EventCase.RESULT -> {
                     holder.stop = true
-                    roomStreamEvent.onWinner(toPlayerModel(holder.event!!.onWinner))
+                    roomStreamEvent.onResult(toEndResultModel(holder.event!!.result))
                 }
                 cardBattle.CardBattle.roomStream.EventCase.ONDRAW -> {
-                    holder.stop = true
-                    roomStreamEvent.onDraw()
+                    holder.stop = holder.event!!.onDraw == 1 || holder.event!!.onDraw == 2
+                    roomStreamEvent.onDraw(holder.event!!.onDraw)
                 }
                 cardBattle.CardBattle.roomStream.EventCase.DEPLOYCARD -> {
 
@@ -185,6 +186,9 @@ class RoomStreamTask : AsyncTask<Void,Void,Boolean>{
                 }
                 cardBattle.CardBattle.roomStream.EventCase.GETONEROOM -> {
                     roomStreamEvent.onGetRoomData(toRoomModel(holder.event!!.getOneRoom))
+                }
+                cardBattle.CardBattle.roomStream.EventCase.EXCMESSAGE -> {
+                    roomStreamEvent.onException(holder.event!!.excMessage.exceptionMessage,holder.event!!.excMessage.exceptionFlag)
                 }
                 else -> {
 

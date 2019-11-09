@@ -5,6 +5,7 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.ImageView
 import android.widget.TextView
 import com.syahputrareno975.simplecardbattle.R
 import com.syahputrareno975.simplecardbattle.model.room.RoomDataModel
@@ -29,6 +30,7 @@ class AdapterRoom : ArrayAdapter<RoomDataModel> {
             holder = DataList()
 
             holder.Name = row.findViewById(R.id.RoomName)
+            holder.IconRoom = row.findViewById(R.id.icon_room)
 
             row.setTag(holder)
         } else {
@@ -37,11 +39,17 @@ class AdapterRoom : ArrayAdapter<RoomDataModel> {
         val item = getItem(position)
 
         holder.Name.text = item!!.RoomName
+        when (item.Id) {
+            "RANDOM_BATTLE" -> {
+                holder.IconRoom.visibility = View.GONE
+            }
+        }
 
         return row!!
     }
 
     class DataList {
         lateinit var Name : TextView
+        lateinit var IconRoom : ImageView
     }
 }

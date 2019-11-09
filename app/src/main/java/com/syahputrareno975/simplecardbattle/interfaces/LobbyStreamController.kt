@@ -17,4 +17,6 @@ interface LobbyStreamController {
     fun removeCardFromDeck(p: PlayerModel,c : CardModel)
     fun buyCardFromShop(p: PlayerModel,c : CardModel)
     fun sellCardToShop(p: PlayerModel,c : CardModel)
+    fun addDeckSlot(p :PlayerModel,typeSlot : Int)
+    fun forceQuit()
 }

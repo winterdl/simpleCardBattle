@@ -5,15 +5,15 @@ import com.syahputrareno975.simplecardbattle.model.room.RoomDataModel
 
 class RoomRule {
     companion object {
-        fun getTotalAtk(c : ArrayList<CardModel>) : Int {
-            var total = 0
+        fun getTotalAtk(c : ArrayList<CardModel>) : Long {
+            var total: Long = 0
             for (i in c){
                 total += i.Atk
             }
             return total
         }
-        fun getTotalDef(c : ArrayList<CardModel>) : Int {
-            var total = 0
+        fun getTotalDef(c : ArrayList<CardModel>) : Long {
+            var total : Long= 0
             for (i in c){
                 total += i.Def
             }

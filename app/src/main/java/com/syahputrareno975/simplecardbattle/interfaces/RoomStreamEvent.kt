@@ -3,6 +3,7 @@ package com.syahputrareno975.simplecardbattle.interfaces
 import com.syahputrareno975.simplecardbattle.model.player.PlayerModel
 import com.syahputrareno975.simplecardbattle.model.playerBattleResult.AllPlayerBattleResultModel
 import com.syahputrareno975.simplecardbattle.model.room.RoomDataModel
+import com.syahputrareno975.simplecardbattle.model.roomResult.EndResultModel
 
 interface RoomStreamEvent {
     fun onConnected(c : RoomStreamEventController)
@@ -10,12 +11,12 @@ interface RoomStreamEvent {
     fun onPlayerLeft(p : PlayerModel)
     fun onRoomUpdate(r : RoomDataModel)
     fun onCountDown(i : Int)
-    fun onResult(r : AllPlayerBattleResultModel)
-    fun onWinner(p : PlayerModel)
-    fun onDraw()
+    fun onBattleResult(r : AllPlayerBattleResultModel)
+    fun onResult(r : EndResultModel)
+    fun onDraw(flag : Int)
     fun onGetRoomData(r : RoomDataModel)
     fun onLeft()
     fun onDisconnected()
     fun onError(s : String)
-
+    fun onException(e : String,flag : Int)
 }
