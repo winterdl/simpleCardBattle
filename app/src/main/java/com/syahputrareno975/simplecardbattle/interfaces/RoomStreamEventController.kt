@@ -9,5 +9,5 @@ interface RoomStreamEventController {
     fun getOneRoom(id : String)
     fun deployCard(p : PlayerModel,c : CardModel)
     fun pickUpCard(p : PlayerModel,c : CardModel)
-    fun leftGame(p :PlayerModel,r :RoomDataModel)
+    fun leftGame(p :PlayerModel,r :RoomDataModel,action : () -> Unit)
 }

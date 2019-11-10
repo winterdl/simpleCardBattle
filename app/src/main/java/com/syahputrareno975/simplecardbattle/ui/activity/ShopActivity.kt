@@ -1,7 +1,6 @@
 package com.syahputrareno975.simplecardbattle.ui.activity
 
 import android.app.AlertDialog
-import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
@@ -11,7 +10,6 @@ import android.view.View
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.syahputrareno975.simplecardbattle.R
-import com.syahputrareno975.simplecardbattle.interfaces.LobbyStreamController
 import com.syahputrareno975.simplecardbattle.interfaces.ShopStreamEvent
 import com.syahputrareno975.simplecardbattle.interfaces.ShopStreamEventController
 import com.syahputrareno975.simplecardbattle.model.card.CardModel
@@ -49,9 +47,6 @@ class ShopActivity : AppCompatActivity() {
         context = this@ShopActivity
         IntentData = intent
 
-        slot_tab_shop_layout.visibility = View.GONE
-        card_tab_shop_layout.visibility = View.VISIBLE
-
         player = SerializableSave(context, SerializableSave.userDataFileSessionName).load() as PlayerWithCardsModel
 
         shop_back_to_main_menu.setOnClickListener(onMenuShopClick)
@@ -60,8 +55,7 @@ class ShopActivity : AppCompatActivity() {
         card_info_in_shop.setOnClickListener(onMenuShopClick)
         add_deck_slot.setOnClickListener(onMenuShopClick)
         add_reserve_slot.setOnClickListener(onMenuShopClick)
-        card_tab_shop.setOnClickListener(onMenuShopClick)
-        slot_tab_shop.setOnClickListener(onMenuShopClick)
+        upgrade_card.setOnClickListener(onMenuShopClick)
 
         setAdapterListCardInShop()
 
@@ -124,17 +118,6 @@ class ShopActivity : AppCompatActivity() {
 
                 }
 
-                card_tab_shop -> {
-
-                    slot_tab_shop_layout.visibility = View.GONE
-                    card_tab_shop_layout.visibility = View.VISIBLE
-                }
-
-                slot_tab_shop -> {
-
-                    slot_tab_shop_layout.visibility = View.VISIBLE
-                    card_tab_shop_layout.visibility = View.GONE
-                }
 
                 card_info_in_shop -> {
                     DialogCardInfo(context,{}).dialog()
@@ -233,6 +216,46 @@ class ShopActivity : AppCompatActivity() {
                         }.create()
                         .show()
                 }
+
+                upgrade_card -> {
+
+                    var isSelected = false
+                    var card = CardModel()
+
+                    for (i in player.Reserve){
+                        isSelected = i.Flag == 1
+                        if (i.Flag == 1){
+                            card = i
+                        }
+                        if (isSelected){
+                            break
+                        }
+                    }
+
+                    if (!isSelected){
+                        Toast.makeText(context,"please select one card to upgrade!",Toast.LENGTH_SHORT).show()
+                        return
+                    }
+
+
+                    AlertDialog.Builder(context)
+                        .setTitle("Upgrade Card : ${card.Name}")
+                        .setMessage("Are you sure want to upgrade card Level ${card.Level} : ${card.Name} (For : ${card.Price}) to Level ${card.Level+1}?")
+                        .setPositiveButton("Upgrade") { dialog, pos ->
+
+                            // upgrade card
+                            if (::controller.isInitialized){
+                                controller.upgradeCard(player.Owner,card)
+                            }
+
+                            dialog.dismiss()
+                        }
+                        .setNegativeButton("Cancel") { dialog, pos ->
+                            dialog.dismiss()
+                        }.create()
+                        .show()
+
+                }
             }
         }
     }
@@ -241,24 +264,19 @@ class ShopActivity : AppCompatActivity() {
 
     val shopEvent = object : ShopStreamEvent {
 
+
         override fun onConnected(c: ShopStreamEventController) {
-
             controller = c
-
             if (::controller.isInitialized){
                 controller.getMyPlayerData(player.Owner.Id)
             }
-
         }
 
         override fun onGetPlayerData(p: PlayerWithCardsModel) {
-
             player.copyFromObject(p)
-
             if (::controller.isInitialized){
                 controller.getAllCardInShop(player.Owner)
             }
-
         }
 
         override fun onAllCardInShop(c: ArrayList<CardModel>) {
@@ -284,6 +302,15 @@ class ShopActivity : AppCompatActivity() {
             }
         }
 
+        override fun onCardUpgraded(success: Boolean) {
+            if (success){
+                if (::controller.isInitialized){
+                    controller.getMyPlayerData(player.Owner.Id)
+                }
+            }
+            Toast.makeText(context, if (success) "card upgraded" else "failed upgrade card, check your cash or level",Toast.LENGTH_SHORT).show()
+
+        }
         override fun onAddCardSlot(success: Boolean) {
             if (::controller.isInitialized && success){
                 Toast.makeText(context,"Card Hass been Slot Added (+1)",Toast.LENGTH_SHORT).show()
@@ -346,7 +373,12 @@ class ShopActivity : AppCompatActivity() {
         cardShop.addAll(cards)
         adapterReserve.notifyDataSetChanged()
         adapterShop.notifyDataSetChanged()
-        player_in_shop_title_bar.setText("${player.Owner.Name}'s Cards : (${player.Reserve.size}/${player.Owner.MaxReserveSlot}) & Cash : ${formater.format(player.Owner.Cash)}")
+
+        player_name.text = "Lvl ${player.Owner.Level} ${player.Owner.Name}"
+        player_cash.text = "Cash \n${formater.format(player.Owner.Cash)}"
+        player_total_card.text = "Cards \n${player.Reserve.size}"
+        player_total_deck.text = "Deck Slot \n${player.Owner.MaxDeckSlot}"
+        player_total_reserve.text = "Reserve Slot \n${player.Owner.MaxReserveSlot}"
 
     }
 
@@ -387,6 +419,19 @@ class ShopActivity : AppCompatActivity() {
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if (keyCode == KeyEvent.KEYCODE_BACK){
+
+            // left shop
+            if (::controller.isInitialized){
+                controller.leaveShop(object : () -> Unit {
+                    override fun invoke() {
+
+                        val intent = Intent(context,MainLobbyActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    }
+
+                })
+            }
 
             return false
         }

@@ -60,12 +60,9 @@ class QueueStreamTask : AsyncTask<Void,Void,Boolean> {
         }
 
         controller = object : QueueStreamEventController {
-            override fun goToBattle() {
-                holder.battle = true
-                holder.stop = true
-            }
 
-            override fun leftWaitingRoom(p: PlayerModel) {
+            override fun leftWaitingRoom(p: PlayerModel,action :()-> Unit) {
+                holder.actionHolder = action
                 request.onNext(CardBattle.queueStream.newBuilder()
                     .setOnLeftWaitingRoom(toPlayerModelGRPC(player.Owner))
                     .build())
@@ -108,7 +105,6 @@ class QueueStreamTask : AsyncTask<Void,Void,Boolean> {
                 CardBattle.queueStream.EventCase.ONLEFTWAITINGROOM -> {
                     holder.left = true
                     holder.stop = true
-                    streamEvent.onLeftWaitingRoom()
                 }
                 CardBattle.queueStream.EventCase.ONBATTLEFOUND -> {
                     streamEvent.onBattleFound(toRoomModel(holder.event!!.onBattleFound))
@@ -138,20 +134,15 @@ class QueueStreamTask : AsyncTask<Void,Void,Boolean> {
             return
         }
 
-        if (holder.battle){
-            streamEvent.toBattle()
-            return
-        }
 
         if (holder.left) {
-            streamEvent.onLeftWaitingRoom()
-            return
+            holder.actionHolder.invoke()
         }
 
         streamEvent.onDisconnected()
     }
     class Holder {
-        var battle = false
+        var actionHolder : () -> Unit = {}
         var left = false
         var stop = false
         var event : CardBattle.queueStream? = null

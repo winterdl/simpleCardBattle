@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.View
 import android.widget.Toast
 import com.syahputrareno975.simplecardbattle.R
@@ -37,6 +38,7 @@ class QueueActivity : AppCompatActivity() {
     }
 
     fun initWidget(){
+
         this.context = this@QueueActivity
         IntentData = intent
 
@@ -54,7 +56,11 @@ class QueueActivity : AppCompatActivity() {
     val onCancelClick = object : View.OnClickListener {
         override fun onClick(v: View?) {
             if (::controller.isInitialized){
-                controller.leftWaitingRoom(player.Owner)
+                controller.leftWaitingRoom(player.Owner) {
+                    val intent = Intent(context,MainLobbyActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                }
             }
         }
     }
@@ -74,7 +80,17 @@ class QueueActivity : AppCompatActivity() {
             cancel.visibility = View.GONE
 
             if (::controller.isInitialized){
-                controller.goToBattle()
+                controller.leftWaitingRoom(player.Owner) {
+
+                    // go to battle
+                    Timer().schedule(2000){
+                        val i = Intent(context,RoomBattle::class.java)
+                        i.putExtra("room",room)
+                        startActivity(i)
+                        finish()
+                    }
+
+                }
             }
 
             if (r.Players.size < r.MaxPlayer) {
@@ -95,25 +111,8 @@ class QueueActivity : AppCompatActivity() {
 
         }
 
-        override fun toBattle() {
-            Timer().schedule(2000){
-                val i = Intent(context,RoomBattle::class.java)
-                i.putExtra("room",room)
-                startActivity(i)
-                finish()
-            }
-        }
-
-        override fun onLeftWaitingRoom() {
-            val intent = Intent(context,MainLobbyActivity::class.java)
-            startActivity(intent)
-            finish()
-        }
-
         override fun onDisconnected() {
-            val intent = Intent(context,MainLobbyActivity::class.java)
-            startActivity(intent)
-            finish()
+
         }
 
         override fun onError(s: String) {
@@ -129,6 +128,27 @@ class QueueActivity : AppCompatActivity() {
                 .create()
                 .show()
         }
-
     }
+
+
+    //-----------onKeyDown(..)-------------//
+
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK){
+
+            if (::controller.isInitialized){
+                controller.leftWaitingRoom(player.Owner) {
+                    val intent = Intent(context,MainLobbyActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                }
+            }
+            return false
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+
+
+
 }

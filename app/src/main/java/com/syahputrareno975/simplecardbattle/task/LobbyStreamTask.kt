@@ -3,29 +3,20 @@ package com.syahputrareno975.simplecardbattle.task
 import android.os.AsyncTask
 import cardBattle.CardBattle
 import cardBattle.cardBattleServiceGrpc
-import com.syahputrareno975.simplecardbattle.interfaces.LobbyStreamController
+import com.syahputrareno975.simplecardbattle.interfaces.LobbyStreamEventController
 import com.syahputrareno975.simplecardbattle.interfaces.LobbyStreamEvent
-import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toAllCardModel
-import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toAllCardModelGRPC
 import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toAllPlayerModel
 import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toAllPlayerModelGRPC
-import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toAllRoomModel
-import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toAllRoomModelGRPC
 import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toCardModelGRPC
 import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toPlayerModel
 import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toPlayerModelGRPC
 import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toPlayerWithCardsModel
 import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toPlayerWithCardsModelGRPC
-import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toRoomModel
-import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toRoomModelGRPC
 import com.syahputrareno975.simplecardbattle.model.NetworkConfig
-import com.syahputrareno975.simplecardbattle.model.card.AllCardModel
 import com.syahputrareno975.simplecardbattle.model.card.CardModel
 import com.syahputrareno975.simplecardbattle.model.player.AllPlayerModel
 import com.syahputrareno975.simplecardbattle.model.player.PlayerModel
 import com.syahputrareno975.simplecardbattle.model.playerWithCard.PlayerWithCardsModel
-import com.syahputrareno975.simplecardbattle.model.room.AllRoomModel
-import com.syahputrareno975.simplecardbattle.model.room.RoomDataModel
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import io.grpc.stub.StreamObserver
@@ -39,7 +30,7 @@ class LobbyStreamTask : AsyncTask<Void, Void, Boolean> {
     var net: NetworkConfig
     private var failed: Throwable? = null
 
-    lateinit var controller : LobbyStreamController
+    lateinit var eventController : LobbyStreamEventController
     lateinit var request : StreamObserver<CardBattle.lobbyStream>
     lateinit var response : StreamObserver<CardBattle.lobbyStream>
     var error: String = ""
@@ -73,29 +64,11 @@ class LobbyStreamTask : AsyncTask<Void, Void, Boolean> {
             }
         }
 
-        controller = object : LobbyStreamController {
+        eventController = object : LobbyStreamEventController {
             override fun leftLobby(action: () -> Unit) {
                 holder.actionHolder = action
                 holder.stop = true
                 holder.leftLobby = true
-            }
-
-            override fun addCardToDeck(p: PlayerModel, c: CardModel) {
-                request.onNext(CardBattle.lobbyStream.newBuilder()
-                    .setAddCardToDeck(CardBattle.playerAndCard.newBuilder()
-                        .setClient(toPlayerModelGRPC(p))
-                        .setCardData(toCardModelGRPC(c))
-                        .build())
-                    .build())
-            }
-
-            override fun removeCardFromDeck(p: PlayerModel, c: CardModel) {
-                request.onNext(CardBattle.lobbyStream.newBuilder()
-                    .setRemoveCardFromDeck(CardBattle.playerAndCard.newBuilder()
-                        .setClient(toPlayerModelGRPC(p))
-                        .setCardData(toCardModelGRPC(c))
-                        .build())
-                    .build())
             }
 
             override fun getAllPlayer() {
@@ -173,7 +146,7 @@ class LobbyStreamTask : AsyncTask<Void, Void, Boolean> {
                     lobbyStreamEvent.onGetOnePlayer(toPlayerModel(holder.event!!.getOneplayer))
                 }
                 CardBattle.lobbyStream.EventCase.PLAYERSUCCESSJOIN -> {
-                    lobbyStreamEvent.onConnected(toPlayerModel(holder.event!!.playerSuccessJoin),controller)
+                    lobbyStreamEvent.onConnected(toPlayerModel(holder.event!!.playerSuccessJoin),eventController)
                 }
                 CardBattle.lobbyStream.EventCase.PLAYERSUCCESSLEFT -> {
                     holder.stop = true
@@ -183,15 +156,8 @@ class LobbyStreamTask : AsyncTask<Void, Void, Boolean> {
                 CardBattle.lobbyStream.EventCase.ONEPLAYERWITHCARDS -> {
                     lobbyStreamEvent.onGetPlayerData(toPlayerWithCardsModel(holder.event!!.onePlayerWithCards))
                 }
-                CardBattle.lobbyStream.EventCase.ADDCARDTODECK -> {
-                    lobbyStreamEvent.onPlayerCardUpdated()
-                }
-                CardBattle.lobbyStream.EventCase.REMOVECARDFROMDECK -> {
-                    lobbyStreamEvent.onPlayerCardUpdated()
-                }
-
                 CardBattle.lobbyStream.EventCase.EXCMESSAGE -> {
-                    lobbyStreamEvent.onException(holder.event!!.excMessage.exceptionMessage,holder.event!!.excMessage.exceptionFlag,controller)
+                    lobbyStreamEvent.onException(holder.event!!.excMessage.exceptionMessage,holder.event!!.excMessage.exceptionFlag,eventController)
                 }
                 else -> {
 

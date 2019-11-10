@@ -12,14 +12,13 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.syahputrareno975.simplecardbattle.R
-import com.syahputrareno975.simplecardbattle.interfaces.LobbyStreamController
+import com.syahputrareno975.simplecardbattle.interfaces.LobbyStreamEventController
 import com.syahputrareno975.simplecardbattle.interfaces.LobbyStreamEvent
 import com.syahputrareno975.simplecardbattle.model.card.CardModel
 import com.syahputrareno975.simplecardbattle.model.player.PlayerModel
 import com.syahputrareno975.simplecardbattle.model.playerWithCard.PlayerWithCardsModel
 import com.syahputrareno975.simplecardbattle.model.room.RoomDataModel
 import com.syahputrareno975.simplecardbattle.task.LobbyStreamTask
-import com.syahputrareno975.simplecardbattle.task.RoomStreamTask
 import com.syahputrareno975.simplecardbattle.ui.dialog.DialogCardInfo
 import com.syahputrareno975.simplecardbattle.util.NetDefault.Companion.NetConfigDefault
 import com.syahputrareno975.simplecardbattle.util.SerializableSave
@@ -36,10 +35,8 @@ class MainLobbyActivity : AppCompatActivity() {
     lateinit var IntentData : Intent
 
     var player = PlayerWithCardsModel()
-    lateinit var adapterDeckProfile : AdapterCard
-    lateinit var adapterReserveProfile : AdapterCard
 
-    lateinit var controller: LobbyStreamController
+    lateinit var eventController: LobbyStreamEventController
 
     lateinit var waiting : ProgressDialog
     lateinit var leaving : ProgressDialog
@@ -59,7 +56,6 @@ class MainLobbyActivity : AppCompatActivity() {
 
          player = SerializableSave(context, SerializableSave.userDataFileSessionName).load() as PlayerWithCardsModel
 
-        layout_profile.visibility = View.GONE
         layout_main_menu.visibility = View.VISIBLE
 
 
@@ -71,84 +67,12 @@ class MainLobbyActivity : AppCompatActivity() {
         shop_button.setOnClickListener(onMenuLobbyClick)
         logout_button.setOnClickListener(onMenuLobbyClick)
 
-        profile_back_to_main_menu.setOnClickListener(onMenuProfileClick)
-        remove_card_from_deck.setOnClickListener(onMenuProfileClick)
-        add_card_to_deck.setOnClickListener(onMenuProfileClick)
-        card_info_in_profile.setOnClickListener(onMenuProfileClick)
 
-
-        setAdapterListCardInProfile()
 
         LobbyStreamTask(player.Owner, NetConfigDefault, LobbyEvent).execute()
         waiting.show()
     }
 
-
-
-    //-----------onMenuProfileClick-------------//
-
-    val onMenuProfileClick = object : View.OnClickListener {
-        override fun onClick(v: View?) {
-            when (v) {
-                card_info_in_profile -> {
-                    DialogCardInfo(context,{}).dialog()
-                }
-
-                profile_back_to_main_menu -> {
-                    layout_profile.visibility = View.GONE
-                    layout_main_menu.visibility =  View.VISIBLE
-                }
-                remove_card_from_deck -> {
-                    var isSelected = false
-                    var card = CardModel()
-
-                    for (i in player.Deck){
-                        isSelected = i.Flag == 1
-                        if (i.Flag == 1){
-                            card = i
-                        }
-                        if (isSelected){
-                            break
-                        }
-                    }
-
-                    if (!isSelected){
-                        Toast.makeText(context,"please select one card in deck!",Toast.LENGTH_SHORT).show()
-                        return
-                    }
-
-                    if (::controller.isInitialized){
-                        controller.removeCardFromDeck(player.Owner,card)
-                    }
-
-
-                }
-                add_card_to_deck -> {
-                    var isSelected = false
-                    var card = CardModel()
-
-                    for (i in player.Reserve){
-                        isSelected = i.Flag == 1
-                        if (i.Flag == 1){
-                            card = i
-                        }
-                        if (isSelected){
-                            break
-                        }
-                    }
-
-                    if (!isSelected){
-                        Toast.makeText(context,"please select one card in reserve card!",Toast.LENGTH_SHORT).show()
-                        return
-                    }
-
-                    if (::controller.isInitialized){
-                        controller.addCardToDeck(player.Owner,card)
-                    }
-                }
-            }
-        }
-    }
 
     //------------onMenuLobbyClick-------------//
 
@@ -171,8 +95,8 @@ class MainLobbyActivity : AppCompatActivity() {
                     list_item_lobby.adapter = AdapterRoom(context,R.layout.adapter_room,battleMenu)
                     list_item_lobby.setOnItemClickListener { parent, view, position, id ->
                         if (battleMenu.get(position).Id == "RANDOM_BATTLE"){
-                            if (::controller.isInitialized) {
-                                controller.leftLobby(object : ()->Unit{
+                            if (::eventController.isInitialized) {
+                                eventController.leftLobby(object : ()->Unit{
                                     override fun invoke() {
 
                                         // left lobby to battle
@@ -185,8 +109,8 @@ class MainLobbyActivity : AppCompatActivity() {
                             return@setOnItemClickListener
                         }
 
-                        if (::controller.isInitialized){
-                            controller.getOnePlayer(battleMenu.get(position).Id)
+                        if (::eventController.isInitialized){
+                            eventController.getOnePlayer(battleMenu.get(position).Id)
                         }
                     }
 
@@ -194,24 +118,30 @@ class MainLobbyActivity : AppCompatActivity() {
                 }
                 players_button -> {
                     title_item_lobby.setText("Players")
-                    if (::controller.isInitialized){
-                        controller.getAllPlayer()
+                    if (::eventController.isInitialized){
+                        eventController.getAllPlayer()
                     }
                 }
                 profile_button -> {
 
-                    layout_profile.visibility = View.VISIBLE
-                    layout_main_menu.visibility = View.GONE
+                    if (::eventController.isInitialized) {
+                        eventController.leftLobby(object : ()->Unit {
+                            override fun invoke() {
 
-                    if (::controller.isInitialized){
-                        controller.getMyPlayerData(player.Owner.Id)
+                                val intent = Intent(context,ProfileActivity::class.java)
+                                startActivity(intent)
+                                finish()
+
+                            }
+                        })
                     }
+
                 }
                 shop_button -> {
 
                     title_item_lobby.setText("Shop")
-                    if (::controller.isInitialized) {
-                        controller.leftLobby(object : ()->Unit {
+                    if (::eventController.isInitialized) {
+                        eventController.leftLobby(object : ()->Unit {
                             override fun invoke() {
 
                                 val intent = Intent(context,ShopActivity::class.java)
@@ -230,8 +160,8 @@ class MainLobbyActivity : AppCompatActivity() {
                         .setMessage("are you sure want to quit game?")
                         .setPositiveButton("Yes") { dialog, pos ->
                             leaving = ProgressDialog.show(context,"","Leaving....")
-                            if (::controller.isInitialized) {
-                                controller.leftGame(player.Owner, object : () -> Unit{
+                            if (::eventController.isInitialized) {
+                                eventController.leftGame(player.Owner, object : () -> Unit{
                                     override fun invoke() {
                                         if (SerializableSave(context,SerializableSave.userDataFileSessionName).delete()){
                                             startActivity(Intent(context,Login::class.java))
@@ -261,29 +191,17 @@ class MainLobbyActivity : AppCompatActivity() {
     val LobbyEvent = object : LobbyStreamEvent {
 
         override fun onGetPlayerData(p: PlayerWithCardsModel) {
-
             player.copyFromObject(p)
-
-            player_name.setText("Name : ${player.Owner.Name}")
-            player_cash.setText("Cash : ${formater.format(player.Owner.Cash)}")
-            player_level.setText("Level : ${formater.format(player.Owner.Level)}")
-            player_exp.setText("Exp : ${formater.format(player.Owner.Exp)}/${formater.format(player.Owner.MaxExp)}")
-            player_deck.setText("My Deck ${player.Deck.size}/${player.Owner.MaxDeckSlot}")
-            player_reserve.setText("My Card ${player.Reserve.size}/${player.Owner.MaxReserveSlot}")
-
-            adapterDeckProfile.notifyDataSetChanged()
-            adapterReserveProfile.notifyDataSetChanged()
-
         }
 
-        override fun onConnected(p : PlayerModel,c: LobbyStreamController) {
+        override fun onConnected(p : PlayerModel,c: LobbyStreamEventController) {
             if (waiting.isShowing) {
                 waiting.dismiss()
             }
-            controller = c
+            eventController = c
             player.Owner.Id = p.Id
-            if (::controller.isInitialized){
-                controller.getMyPlayerData(player.Owner.Id)
+            if (::eventController.isInitialized){
+                eventController.getMyPlayerData(player.Owner.Id)
             }
         }
 
@@ -299,14 +217,9 @@ class MainLobbyActivity : AppCompatActivity() {
 
             list_item_lobby.adapter = AdapterPlayer(context,R.layout.adapter_player,p)
             list_item_lobby.setOnItemClickListener { parent, view, position, id ->
-                if (::controller.isInitialized){
-                    controller.getOnePlayer(p.get(position).Id)
+                if (::eventController.isInitialized){
+                    eventController.getOnePlayer(p.get(position).Id)
                 }
-            }
-        }
-        override fun onPlayerCardUpdated() {
-            if (::controller.isInitialized){
-                controller.getMyPlayerData(player.Owner.Id)
             }
         }
 
@@ -322,7 +235,7 @@ class MainLobbyActivity : AppCompatActivity() {
                 .create()
                 .show()
         }
-        override fun onException(e : String,flag : Int,c : LobbyStreamController) {
+        override fun onException(e : String,flag : Int,c : LobbyStreamEventController) {
 
             if (waiting.isShowing) {
                 waiting.dismiss()
@@ -378,8 +291,8 @@ class MainLobbyActivity : AppCompatActivity() {
         if (keyCode == KeyEvent.KEYCODE_BACK){
 
             leaving = ProgressDialog.show(context,"","Save and Quit....")
-            if (::controller.isInitialized) {
-                controller.leftLobby(object : ()->Unit {
+            if (::eventController.isInitialized) {
+                eventController.leftLobby(object : ()->Unit {
                     override fun invoke() {
                         if (SerializableSave(context,SerializableSave.userDataFileSessionName).save(player)){
                             finish()
@@ -395,34 +308,4 @@ class MainLobbyActivity : AppCompatActivity() {
         return super.onKeyDown(keyCode, event)
     }
 
-
-    //-----------setAdapterListCardInProfile()-------------//
-
-
-    fun setAdapterListCardInProfile(){
-
-        adapterDeckProfile = AdapterCard(context,player.Deck)
-        adapterDeckProfile.setOnCardClick { c,pos ->
-            for (i in player.Deck) {
-                i.Flag = 0
-            }
-            player.Deck.get(pos).Flag = 1
-            adapterDeckProfile.notifyDataSetChanged()
-        }
-
-        list_card_deck.adapter = adapterDeckProfile
-        list_card_deck.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-
-        adapterReserveProfile = AdapterCard(context,player.Reserve)
-        adapterReserveProfile.setOnCardClick { c,pos ->
-            for (i in player.Reserve) {
-                i.Flag = 0
-            }
-            player.Reserve.get(pos).Flag = 1
-            adapterReserveProfile.notifyDataSetChanged()
-        }
-
-        list_card_reseve.adapter = adapterReserveProfile
-        list_card_reseve.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-    }
 }

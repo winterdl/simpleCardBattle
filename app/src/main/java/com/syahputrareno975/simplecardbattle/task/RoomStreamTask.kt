@@ -3,16 +3,11 @@ package com.syahputrareno975.simplecardbattle.task
 import android.os.AsyncTask
 import cardBattle.CardBattle
 import cardBattle.cardBattleServiceGrpc
-import com.syahputrareno975.simplecardbattle.interfaces.LobbyStreamController
 import com.syahputrareno975.simplecardbattle.interfaces.RoomStreamEvent
 import com.syahputrareno975.simplecardbattle.interfaces.RoomStreamEventController
-import com.syahputrareno975.simplecardbattle.model.ModelCasting
 import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toAllPlayerBattleResultModelModel
-import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toAllPlayerBattleResultModelModelGRPC
-import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toAllPlayerWithCardsModelGRPC
 import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toCardModelGRPC
 import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toEndResultModel
-import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toPlayerModel
 import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toPlayerModelGRPC
 import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toPlayerWithCardsModel
 import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toPlayerWithCardsModelGRPC
@@ -106,7 +101,8 @@ class RoomStreamTask : AsyncTask<Void,Void,Boolean>{
                     .build())
             }
 
-            override fun leftGame(p: PlayerModel, r: RoomDataModel) {
+            override fun leftGame(p: PlayerModel, r: RoomDataModel,action : () -> Unit) {
+                holder.actionHolder = action
                 request.onNext(CardBattle.roomStream.newBuilder()
                     .setIdRoom(roomData.Id)
                     .setPlayerLeft(toPlayerWithCardsModelGRPC(player))
@@ -149,7 +145,7 @@ class RoomStreamTask : AsyncTask<Void,Void,Boolean>{
         if (holder.event != null){
             when (holder.event!!.eventCase){
                 cardBattle.CardBattle.roomStream.EventCase.COUNTDOWN -> {
-                    roomStreamEvent.onCountDown(holder.event!!.countDown)
+                    roomStreamEvent.onCountDown(holder.event!!.countDown.battleTime, toRoomModel(holder.event!!.countDown.updatedRoom))
                 }
                 cardBattle.CardBattle.roomStream.EventCase.PLAYERJOIN -> {
                     roomStreamEvent.onPlayerJoin(toPlayerWithCardsModel(holder.event!!.playerJoin).Owner)
@@ -213,8 +209,7 @@ class RoomStreamTask : AsyncTask<Void,Void,Boolean>{
         }
 
         if (holder.left) {
-            roomStreamEvent.onLeft()
-            return
+            holder.actionHolder.invoke()
         }
 
         roomStreamEvent.onDisconnected()
@@ -222,6 +217,7 @@ class RoomStreamTask : AsyncTask<Void,Void,Boolean>{
     }
 
     class Holder {
+        var actionHolder : () -> Unit = {}
         var left = false
         var stop = false
         var event : CardBattle.roomStream? = null

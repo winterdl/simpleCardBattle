@@ -7,8 +7,6 @@ interface QueueStreamEvent {
     fun onBattleFound(r : RoomDataModel)
     fun onBattleNotFound()
     fun onJoinWaitingRoom()
-    fun onLeftWaitingRoom()
-    fun toBattle()
     fun onDisconnected()
     fun onError(s : String)
 }

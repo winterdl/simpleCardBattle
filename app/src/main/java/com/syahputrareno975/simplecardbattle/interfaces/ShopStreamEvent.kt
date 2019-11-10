@@ -9,6 +9,7 @@ interface ShopStreamEvent {
     fun onAllCardInShop(c : ArrayList<CardModel>)
     fun onCardBought(success : Boolean)
     fun onCardSold(success : Boolean)
+    fun onCardUpgraded(success : Boolean)
     fun onAddCardSlot(success : Boolean)
     fun onShopCountDown(i : Int)
     fun onShopRefreshed()

@@ -32,6 +32,8 @@ import com.syahputrareno975.simplecardbattle.util.SerializableSave
 import com.syahputrareno975.simpleuno.adapter.AdapterCard
 import kotlinx.android.synthetic.main.activity_room_battle.*
 import java.text.DecimalFormat
+import java.util.*
+import kotlin.concurrent.schedule
 
 class RoomBattle : AppCompatActivity() {
     lateinit var context: Context
@@ -90,7 +92,12 @@ class RoomBattle : AppCompatActivity() {
         claim_cash.setText("Cash Receive : ${formater.format(r.Reward.CashReward)}")
         claim_exp.setText("Exp Receive : ${formater.format(r.Reward.ExpReward)}")
         victory_title.setText("Victory")
-        victory_detail.setText(if (r.FlagResult == 0) "Enemy Hp Is Reduce to 0" else if (r.FlagResult == 1) "You Have More Hp" else "Receive Rewards")
+        victory_detail.setText(
+            if (r.FlagResult == 0) "Enemy Hp Is Reduce to 0"
+            else if (r.FlagResult == 1) "You Have More Hp"
+            else if (r.FlagResult == 2) "No card deploy, but You Have More Hp"
+            else "Receive Rewards")
+
         main_menu_button.setOnClickListener(OnMainMenuPress)
     }
 
@@ -102,7 +109,11 @@ class RoomBattle : AppCompatActivity() {
         claim_cash.setText("Cash Receive : 0")
         claim_exp.setText("Exp Receive : 0")
         victory_title.setText("Defeated")
-        victory_detail.setText(if (r.FlagResult == 0) "Your Hp hass been Reduce to 0" else if (r.FlagResult == 1) "Enemy Have More Hp" else "Goodluck next time")
+        victory_detail.setText(
+            if (r.FlagResult == 0) "Your Hp hass been Reduce to 0"
+            else if (r.FlagResult == 1) "Enemy Have More Hp"
+            else if (r.FlagResult == 2) "No card deploy,but Enemy Have More Hp"
+            else "Goodluck next time")
 
         main_menu_button.setOnClickListener(OnMainMenuPress)
     }
@@ -173,8 +184,6 @@ class RoomBattle : AppCompatActivity() {
             setEnemyStatus(r.Players.get(findEnemy(player.Owner.Id, r)))
         }
 
-        brief_layout.visibility = View.GONE
-        main_game_layout.visibility = View.VISIBLE
     }
 
     fun dismissDialog() {
@@ -229,10 +238,13 @@ class RoomBattle : AppCompatActivity() {
 
         override fun onRoomUpdate(r: RoomDataModel) {
             refreshRoom(r)
+            brief_layout.visibility = View.GONE
+            main_game_layout.visibility = View.VISIBLE
         }
 
-        override fun onCountDown(i: Int) {
+        override fun onCountDown(i: Int,r : RoomDataModel) {
             countdown.text = "Battle in ${i}"
+            refreshRoom(r)
         }
         override fun onBattleResult(r: AllPlayerBattleResultModel) {
 
@@ -304,13 +316,6 @@ class RoomBattle : AppCompatActivity() {
             refreshRoom(r)
         }
 
-        override fun onLeft() {
-            Toast.makeText(context,"you left the game",Toast.LENGTH_SHORT).show()
-            val intent = Intent(context,MainLobbyActivity::class.java)
-            startActivity(intent)
-            finish()
-        }
-
         override fun onDisconnected() {
             Toast.makeText(context,"match finish",Toast.LENGTH_SHORT).show()
         }
@@ -346,7 +351,12 @@ class RoomBattle : AppCompatActivity() {
         if (keyCode == KeyEvent.KEYCODE_BACK){
 
             if (::controler.isInitialized) {
-                controler.leftGame(player.Owner,room)
+                controler.leftGame(player.Owner,room) {
+                    Toast.makeText(context,"you left the game",Toast.LENGTH_SHORT).show()
+                    val intent = Intent(context,MainLobbyActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                }
             }
 
             return false

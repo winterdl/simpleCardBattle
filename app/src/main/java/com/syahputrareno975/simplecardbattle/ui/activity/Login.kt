@@ -11,7 +11,7 @@ import androidx.appcompat.app.AlertDialog
 import com.syahputrareno975.simplecardbattle.R
 import com.syahputrareno975.simplecardbattle.model.player.PlayerModel
 import com.syahputrareno975.simplecardbattle.model.playerWithCard.PlayerWithCardsModel
-import com.syahputrareno975.simplecardbattle.task.LoginTask
+import com.syahputrareno975.simplecardbattle.task.RegisterTask
 import com.syahputrareno975.simplecardbattle.util.NetDefault.Companion.NetConfigDefault
 import com.syahputrareno975.simplecardbattle.util.SerializableSave
 import kotlinx.android.synthetic.main.activity_login.*
@@ -49,7 +49,7 @@ class Login : AppCompatActivity() {
 
             val waiting = ProgressDialog.show(context,"","Connecting....")
 
-            LoginTask(
+            RegisterTask(
                 PlayerModel("",player_name.text.toString(),"",0,0,0,0,0,0),
                 NetConfigDefault
             ) { player, e ->
@@ -67,7 +67,7 @@ class Login : AppCompatActivity() {
                         .create()
                         .show()
 
-                    return@LoginTask
+                    return@RegisterTask
                 }
 
                 val p = PlayerWithCardsModel()

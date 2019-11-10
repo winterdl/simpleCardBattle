@@ -58,7 +58,7 @@ class AdapterCard : RecyclerView.Adapter<AdapterCard.ViewHolder> {
 
 
         Picasso.get()
-            .load("http://${NetConfigDefault.Url}:8080/${item.Image}")
+            .load(item.Image)
             .into(holder.CardImage,object : Callback{
                 override fun onSuccess() {
 

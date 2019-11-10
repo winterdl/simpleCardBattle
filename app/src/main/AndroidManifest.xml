@@ -12,7 +12,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".ui.activity.ShopActivity"></activity>
+        <activity android:name=".ui.activity.ProfileActivity"></activity>
+        <activity android:name=".ui.activity.ShopActivity" />
         <activity android:name=".ui.activity.QueueActivity" />
         <activity android:name=".ui.activity.RoomBattle" />
         <activity

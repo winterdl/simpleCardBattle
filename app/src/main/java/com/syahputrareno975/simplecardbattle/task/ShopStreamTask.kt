@@ -106,6 +106,15 @@ class ShopStreamTask : AsyncTask<Void,Void,Boolean> {
                     .build())
             }
 
+            override fun upgradeCard(p: PlayerModel, c: CardModel) {
+                request.onNext(CardBattle.shopStream.newBuilder()
+                    .setOnUpgradeCard(CardBattle.playerAndCard.newBuilder()
+                        .setClient(toPlayerModelGRPC(p))
+                        .setCardData(toCardModelGRPC(c))
+                        .build())
+                    .build())
+            }
+
             override fun leaveShop(action: () -> Unit) {
                 holder.left = true
                 holder.stop = true
@@ -171,7 +180,13 @@ class ShopStreamTask : AsyncTask<Void,Void,Boolean> {
                 CardBattle.shopStream.EventCase.EXCMESSAGE -> {
                     shopStreamEvent.onException(holder.event!!.excMessage.exceptionMessage,holder.event!!.excMessage.exceptionFlag,controller)
                 }
+                CardBattle.shopStream.EventCase.ONCARDUPGRADED -> {
+                    shopStreamEvent.onCardUpgraded(holder.event!!.onCardUpgraded)
+                }
                 CardBattle.shopStream.EventCase.ONBUYCARD -> {
+
+                }
+                CardBattle.shopStream.EventCase.ONUPGRADECARD -> {
 
                 }
                 CardBattle.shopStream.EventCase.ONCARDDECKSLOT -> {

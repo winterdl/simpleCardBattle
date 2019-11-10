@@ -8,6 +8,7 @@ interface ShopStreamEventController {
     fun getAllCardInShop(p : PlayerModel)
     fun buyCardFromShop(p: PlayerModel,c : CardModel)
     fun sellCardToShop(p: PlayerModel,c : CardModel)
+    fun upgradeCard(p: PlayerModel,c : CardModel)
     fun addDeckSlot(p :PlayerModel,typeSlot : Int)
     fun leaveShop(action : () -> Unit)
 }

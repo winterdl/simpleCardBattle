@@ -12,7 +12,7 @@ import io.grpc.ManagedChannelBuilder
 import java.lang.Exception
 import java.util.concurrent.TimeUnit
 
-class LoginTask : AsyncTask<Void,Void, CardBattle.player> {
+class RegisterTask : AsyncTask<Void,Void, CardBattle.player> {
 
     lateinit var channel: ManagedChannel
     var player : PlayerModel
@@ -38,7 +38,7 @@ class LoginTask : AsyncTask<Void,Void, CardBattle.player> {
         try {
 
             val stub = cardBattleServiceGrpc.newBlockingStub(this.channel)
-            response = stub.cardBattleLogin(toPlayerModelGRPC(player))
+            response = stub.cardBattleRegister(toPlayerModelGRPC(player))
 
         }catch (e : Exception){
             error += e.message

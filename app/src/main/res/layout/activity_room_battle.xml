@@ -47,7 +47,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:text="Waiting For Another Player...."
+                        android:text="Entering Room...."
                         android:textAlignment="center"
                         android:textSize="16sp"
                         tools:visibility="visible" />
