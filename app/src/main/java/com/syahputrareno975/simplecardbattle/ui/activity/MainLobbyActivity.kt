@@ -10,19 +10,17 @@ import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.syahputrareno975.simplecardbattle.R
-import com.syahputrareno975.simplecardbattle.interfaces.LobbyStreamEventController
-import com.syahputrareno975.simplecardbattle.interfaces.LobbyStreamEvent
-import com.syahputrareno975.simplecardbattle.model.card.CardModel
-import com.syahputrareno975.simplecardbattle.model.player.PlayerModel
-import com.syahputrareno975.simplecardbattle.model.playerWithCard.PlayerWithCardsModel
-import com.syahputrareno975.simplecardbattle.model.room.RoomDataModel
-import com.syahputrareno975.simplecardbattle.task.LobbyStreamTask
-import com.syahputrareno975.simplecardbattle.ui.dialog.DialogCardInfo
-import com.syahputrareno975.simplecardbattle.util.NetDefault.Companion.NetConfigDefault
-import com.syahputrareno975.simplecardbattle.util.SerializableSave
-import com.syahputrareno975.simpleuno.adapter.AdapterCard
+import com.syahputrareno975.cardbattlemodule.interfaces.LobbyStreamEventController
+import com.syahputrareno975.cardbattlemodule.interfaces.LobbyStreamEvent
+import com.syahputrareno975.cardbattlemodule.model.NetworkConfig
+import com.syahputrareno975.cardbattlemodule.model.card.CardModel
+import com.syahputrareno975.cardbattlemodule.model.player.PlayerModel
+import com.syahputrareno975.cardbattlemodule.model.playerWithCard.PlayerWithCardsModel
+import com.syahputrareno975.cardbattlemodule.model.room.RoomDataModel
+import com.syahputrareno975.cardbattlemodule.task.LobbyStreamTask
+import com.syahputrareno975.cardbattlemodule.util.NetDefault.NetConfigDefault
+import com.syahputrareno975.cardbattlemodule.util.SerializableSave
 import com.syahputrareno975.simpleuno.adapter.AdapterPlayer
 import com.syahputrareno975.simpleuno.adapter.AdapterRoom
 import kotlinx.android.synthetic.main.activity_lobby.*
@@ -33,6 +31,7 @@ class MainLobbyActivity : AppCompatActivity() {
 
     lateinit var context: Context
     lateinit var IntentData : Intent
+    lateinit var networkConfig: NetworkConfig
 
     var player = PlayerWithCardsModel()
 
@@ -54,6 +53,11 @@ class MainLobbyActivity : AppCompatActivity() {
         this.context = this@MainLobbyActivity
         IntentData = intent
 
+        networkConfig = NetConfigDefault
+        if (SerializableSave(context,SerializableSave.serverChoosedFileSessionName).load() != null){
+            networkConfig = SerializableSave(context,SerializableSave.serverChoosedFileSessionName).load() as NetworkConfig
+        }
+
          player = SerializableSave(context, SerializableSave.userDataFileSessionName).load() as PlayerWithCardsModel
 
         layout_main_menu.visibility = View.VISIBLE
@@ -69,7 +73,7 @@ class MainLobbyActivity : AppCompatActivity() {
 
 
 
-        LobbyStreamTask(player.Owner, NetConfigDefault, LobbyEvent).execute()
+        LobbyStreamTask(player.Owner,networkConfig, LobbyEvent).execute()
         waiting.show()
     }
 
@@ -228,7 +232,7 @@ class MainLobbyActivity : AppCompatActivity() {
                 .setTitle("Error")
                 .setMessage("Cannot connect to server, Reason : ${e}")
                 .setPositiveButton("Try Again") { dialog, which ->
-                    LobbyStreamTask(player.Owner,NetConfigDefault,this).execute()
+                    LobbyStreamTask(player.Owner,networkConfig,this).execute()
                     waiting.show()
                 }
                 .setCancelable(false)

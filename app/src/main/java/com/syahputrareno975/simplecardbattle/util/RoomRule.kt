@@ -1,7 +1,7 @@
 package com.syahputrareno975.simplecardbattle.util
 
-import com.syahputrareno975.simplecardbattle.model.card.CardModel
-import com.syahputrareno975.simplecardbattle.model.room.RoomDataModel
+import com.syahputrareno975.cardbattlemodule.model.card.CardModel
+import com.syahputrareno975.cardbattlemodule.model.room.RoomDataModel
 
 class RoomRule {
     companion object {

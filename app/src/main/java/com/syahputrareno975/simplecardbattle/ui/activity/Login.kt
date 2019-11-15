@@ -9,16 +9,19 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.syahputrareno975.simplecardbattle.R
-import com.syahputrareno975.simplecardbattle.model.player.PlayerModel
-import com.syahputrareno975.simplecardbattle.model.playerWithCard.PlayerWithCardsModel
-import com.syahputrareno975.simplecardbattle.task.RegisterTask
-import com.syahputrareno975.simplecardbattle.util.NetDefault.Companion.NetConfigDefault
-import com.syahputrareno975.simplecardbattle.util.SerializableSave
+import com.syahputrareno975.cardbattlemodule.model.NetworkConfig
+import com.syahputrareno975.cardbattlemodule.model.player.PlayerModel
+import com.syahputrareno975.cardbattlemodule.model.playerWithCard.PlayerWithCardsModel
+import com.syahputrareno975.cardbattlemodule.task.RegisterTask
+import com.syahputrareno975.simplecardbattle.ui.dialog.DialogChooseServer
+import com.syahputrareno975.cardbattlemodule.util.NetDefault.NetConfigDefault
+import com.syahputrareno975.cardbattlemodule.util.SerializableSave
 import kotlinx.android.synthetic.main.activity_login.*
 
 class Login : AppCompatActivity() {
 
     lateinit var context: Context
+    lateinit var networkConfig: NetworkConfig
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,7 +33,13 @@ class Login : AppCompatActivity() {
 
         this.context = this@Login
 
+        networkConfig = NetConfigDefault
+        if (SerializableSave(context,SerializableSave.serverChoosedFileSessionName).load() != null){
+            networkConfig = SerializableSave(context,SerializableSave.serverChoosedFileSessionName).load() as NetworkConfig
+        }
+
         login_button.setOnClickListener(onLoginButtonClick)
+        browse_server.setOnClickListener(onBrowseServerClick)
 
         if (SerializableSave(context, SerializableSave.userDataFileSessionName).load() != null){
             val intent = Intent(context,MainLobbyActivity::class.java)
@@ -51,7 +60,7 @@ class Login : AppCompatActivity() {
 
             RegisterTask(
                 PlayerModel("",player_name.text.toString(),"",0,0,0,0,0,0),
-                NetConfigDefault
+                networkConfig
             ) { player, e ->
 
                 waiting.dismiss()
@@ -83,6 +92,19 @@ class Login : AppCompatActivity() {
 
             waiting.show()
         }
+    }
+
+    val onBrowseServerClick = object : View.OnClickListener {
+        override fun onClick(v: View?) {
+            DialogChooseServer(context) {
+                if (SerializableSave(context,SerializableSave.serverChoosedFileSessionName).save(it)){
+                    Toast.makeText(context,"Server Choosed",Toast.LENGTH_SHORT).show()
+                }
+                networkConfig.Url = it.Url
+                networkConfig.Port = it.Port
+            }.dialog()
+        }
+
     }
 
 }

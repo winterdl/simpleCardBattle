@@ -2,7 +2,6 @@ package com.syahputrareno975.simplecardbattle.ui.activity
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
@@ -12,32 +11,30 @@ import android.view.View
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.syahputrareno975.simplecardbattle.R
-import com.syahputrareno975.simplecardbattle.interfaces.RoomStreamEvent
-import com.syahputrareno975.simplecardbattle.interfaces.RoomStreamEventController
-import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toRoomModel
-import com.syahputrareno975.simplecardbattle.model.ModelCasting.Companion.toRoomModelGRPC
-import com.syahputrareno975.simplecardbattle.model.player.PlayerModel
-import com.syahputrareno975.simplecardbattle.model.playerBattleResult.AllPlayerBattleResultModel
-import com.syahputrareno975.simplecardbattle.model.playerWithCard.PlayerWithCardsModel
-import com.syahputrareno975.simplecardbattle.model.room.RoomDataModel
-import com.syahputrareno975.simplecardbattle.model.roomResult.EndResultModel
-import com.syahputrareno975.simplecardbattle.task.RoomStreamTask
+import com.syahputrareno975.cardbattlemodule.interfaces.RoomStreamEvent
+import com.syahputrareno975.cardbattlemodule.interfaces.RoomStreamEventController
+import com.syahputrareno975.cardbattlemodule.model.NetworkConfig
+import com.syahputrareno975.cardbattlemodule.model.player.PlayerModel
+import com.syahputrareno975.cardbattlemodule.model.playerBattleResult.AllPlayerBattleResultModel
+import com.syahputrareno975.cardbattlemodule.model.playerWithCard.PlayerWithCardsModel
+import com.syahputrareno975.cardbattlemodule.model.room.RoomDataModel
+import com.syahputrareno975.cardbattlemodule.model.roomResult.EndResultModel
+import com.syahputrareno975.cardbattlemodule.task.RoomStreamTask
+import com.syahputrareno975.cardbattlemodule.util.NetDefault.NetConfigDefault
 import com.syahputrareno975.simplecardbattle.ui.dialog.DialogCardDeck
-import com.syahputrareno975.simplecardbattle.util.NetDefault.Companion.NetConfigDefault
 import com.syahputrareno975.simplecardbattle.util.RoomRule.Companion.findEnemy
 import com.syahputrareno975.simplecardbattle.util.RoomRule.Companion.findPlayer
 import com.syahputrareno975.simplecardbattle.util.RoomRule.Companion.getTotalAtk
 import com.syahputrareno975.simplecardbattle.util.RoomRule.Companion.getTotalDef
-import com.syahputrareno975.simplecardbattle.util.SerializableSave
+import com.syahputrareno975.cardbattlemodule.util.SerializableSave
 import com.syahputrareno975.simpleuno.adapter.AdapterCard
 import kotlinx.android.synthetic.main.activity_room_battle.*
 import java.text.DecimalFormat
-import java.util.*
-import kotlin.concurrent.schedule
 
 class RoomBattle : AppCompatActivity() {
     lateinit var context: Context
     lateinit var IntentData : Intent
+    lateinit var networkConfig: NetworkConfig
 
     var player = PlayerWithCardsModel()
     lateinit var room: RoomDataModel
@@ -59,12 +56,17 @@ class RoomBattle : AppCompatActivity() {
         this.context = this@RoomBattle
         IntentData = intent
 
+        networkConfig = NetConfigDefault
+        if (SerializableSave(context,SerializableSave.serverChoosedFileSessionName).load() != null){
+            networkConfig = SerializableSave(context,SerializableSave.serverChoosedFileSessionName).load() as NetworkConfig
+        }
+
         room = IntentData.getSerializableExtra("room") as RoomDataModel
         player = SerializableSave(context, SerializableSave.userDataFileSessionName).load() as PlayerWithCardsModel
 
         deploy_card.setOnClickListener(onChooseCard)
 
-        RoomStreamTask(player,room,NetConfigDefault,onRoomEvent).execute()
+        RoomStreamTask(player,room, networkConfig,onRoomEvent).execute()
 
         brief_layout.visibility = View.VISIBLE
         main_game_layout.visibility = View.GONE
@@ -107,7 +109,7 @@ class RoomBattle : AppCompatActivity() {
         claim_cards.visibility = View.GONE
 
         claim_cash.setText("Cash Receive : 0")
-        claim_exp.setText("Exp Receive : 0")
+        claim_exp.setText("Exp Receive : ${formater.format(r.Reward.ExpReward)}")
         victory_title.setText("Defeated")
         victory_detail.setText(
             if (r.FlagResult == 0) "Your Hp hass been Reduce to 0"
@@ -126,7 +128,9 @@ class RoomBattle : AppCompatActivity() {
         claim_cash.setText("Cash Receive : 0")
         claim_exp.setText("Exp Receive : 0")
         victory_title.setText("Draw")
-        victory_detail.setText(if (flag == 2) "All player have same Hp" else "All player have no HP and card left to continue the battle")
+        victory_detail.setText(if (flag == 2) "All player have same Hp"
+        else if (flag == 3) "All player have no willing to fight"
+        else "Draw")
 
         main_menu_button.setOnClickListener(OnMainMenuPress)
     }
@@ -325,7 +329,7 @@ class RoomBattle : AppCompatActivity() {
                 .setTitle("Error")
                 .setMessage("Cannot connect to server, Reason : ${s}")
                 .setPositiveButton("Try Again") { dialog, which ->
-                    RoomStreamTask(player,room,NetConfigDefault,this).execute()
+                    RoomStreamTask(player,room, networkConfig,this).execute()
                     dialog.dismiss()
                 }
                 .setCancelable(false)

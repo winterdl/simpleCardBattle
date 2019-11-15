@@ -1,6 +1,7 @@
 package com.syahputrareno975.simplecardbattle.ui.activity
 
 import android.app.AlertDialog
+import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
@@ -10,14 +11,15 @@ import android.view.View
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.syahputrareno975.simplecardbattle.R
-import com.syahputrareno975.simplecardbattle.interfaces.ShopStreamEvent
-import com.syahputrareno975.simplecardbattle.interfaces.ShopStreamEventController
-import com.syahputrareno975.simplecardbattle.model.card.CardModel
-import com.syahputrareno975.simplecardbattle.model.playerWithCard.PlayerWithCardsModel
-import com.syahputrareno975.simplecardbattle.task.ShopStreamTask
+import com.syahputrareno975.cardbattlemodule.interfaces.ShopStreamEvent
+import com.syahputrareno975.cardbattlemodule.interfaces.ShopStreamEventController
+import com.syahputrareno975.cardbattlemodule.model.NetworkConfig
+import com.syahputrareno975.cardbattlemodule.model.card.CardModel
+import com.syahputrareno975.cardbattlemodule.model.playerWithCard.PlayerWithCardsModel
+import com.syahputrareno975.cardbattlemodule.task.ShopStreamTask
+import com.syahputrareno975.cardbattlemodule.util.NetDefault.NetConfigDefault
 import com.syahputrareno975.simplecardbattle.ui.dialog.DialogCardInfo
-import com.syahputrareno975.simplecardbattle.util.NetDefault.Companion.NetConfigDefault
-import com.syahputrareno975.simplecardbattle.util.SerializableSave
+import com.syahputrareno975.cardbattlemodule.util.SerializableSave
 import com.syahputrareno975.simpleuno.adapter.AdapterCard
 import kotlinx.android.synthetic.main.activity_shop.*
 import java.text.DecimalFormat
@@ -26,6 +28,7 @@ class ShopActivity : AppCompatActivity() {
 
     lateinit var context: Context
     lateinit var IntentData : Intent
+    lateinit var networkConfig: NetworkConfig
 
     var player = PlayerWithCardsModel()
     var cardShop = ArrayList<CardModel>()
@@ -35,6 +38,8 @@ class ShopActivity : AppCompatActivity() {
     lateinit var controller : ShopStreamEventController
 
     val formater = DecimalFormat("##,###")
+
+    lateinit var waiting : ProgressDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,7 +52,13 @@ class ShopActivity : AppCompatActivity() {
         context = this@ShopActivity
         IntentData = intent
 
+        networkConfig = NetConfigDefault
+        if (SerializableSave(context,SerializableSave.serverChoosedFileSessionName).load() != null){
+            networkConfig = SerializableSave(context,SerializableSave.serverChoosedFileSessionName).load() as NetworkConfig
+        }
         player = SerializableSave(context, SerializableSave.userDataFileSessionName).load() as PlayerWithCardsModel
+
+        waiting = ProgressDialog.show(context,"","Loading Shop items....")
 
         shop_back_to_main_menu.setOnClickListener(onMenuShopClick)
         buy_card.setOnClickListener(onMenuShopClick)
@@ -59,8 +70,8 @@ class ShopActivity : AppCompatActivity() {
 
         setAdapterListCardInShop()
 
-        ShopStreamTask(player,NetConfigDefault,shopEvent).execute()
-
+        ShopStreamTask(player,networkConfig,shopEvent).execute()
+        waiting.show()
     }
 
 
@@ -277,6 +288,9 @@ class ShopActivity : AppCompatActivity() {
             if (::controller.isInitialized){
                 controller.getAllCardInShop(player.Owner)
             }
+            if (waiting.isShowing){
+                waiting.dismiss()
+            }
         }
 
         override fun onAllCardInShop(c: ArrayList<CardModel>) {
@@ -338,7 +352,7 @@ class ShopActivity : AppCompatActivity() {
                 .setTitle("Error")
                 .setMessage("Cannot connect to server, Reason : ${e}")
                 .setPositiveButton("Try Again") { dialog, which ->
-                    ShopStreamTask(player,NetConfigDefault,this).execute()
+                    ShopStreamTask(player,networkConfig,this).execute()
                     dialog.dismiss()
                 }
                 .setCancelable(false)

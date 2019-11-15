@@ -7,7 +7,7 @@ import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import com.syahputrareno975.simplecardbattle.R
-import com.syahputrareno975.simplecardbattle.model.player.PlayerModel
+import com.syahputrareno975.cardbattlemodule.model.player.PlayerModel
 
 class DialogRegisterPlayer {
 

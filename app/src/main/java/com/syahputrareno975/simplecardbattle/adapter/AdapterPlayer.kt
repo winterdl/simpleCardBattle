@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import com.syahputrareno975.simplecardbattle.R
-import com.syahputrareno975.simplecardbattle.model.player.PlayerModel
+import com.syahputrareno975.cardbattlemodule.model.player.PlayerModel
 
 class AdapterPlayer : ArrayAdapter<PlayerModel> {
     var contextMenu : Context

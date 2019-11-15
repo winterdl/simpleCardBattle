@@ -8,7 +8,7 @@ import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
 import com.syahputrareno975.simplecardbattle.R
-import com.syahputrareno975.simplecardbattle.model.room.RoomDataModel
+import com.syahputrareno975.cardbattlemodule.model.room.RoomDataModel
 
 class AdapterRoom : ArrayAdapter<RoomDataModel> {
     var contextMenu : Context

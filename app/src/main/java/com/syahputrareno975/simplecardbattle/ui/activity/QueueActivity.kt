@@ -7,17 +7,17 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
-import android.widget.Toast
 import com.syahputrareno975.simplecardbattle.R
-import com.syahputrareno975.simplecardbattle.interfaces.QueueStreamEvent
-import com.syahputrareno975.simplecardbattle.interfaces.QueueStreamEventController
-import com.syahputrareno975.simplecardbattle.model.playerWithCard.PlayerWithCardsModel
-import com.syahputrareno975.simplecardbattle.model.room.RoomDataModel
-import com.syahputrareno975.simplecardbattle.task.QueueStreamTask
-import com.syahputrareno975.simplecardbattle.util.NetDefault.Companion.NetConfigDefault
+import com.syahputrareno975.cardbattlemodule.interfaces.QueueStreamEvent
+import com.syahputrareno975.cardbattlemodule.interfaces.QueueStreamEventController
+import com.syahputrareno975.cardbattlemodule.model.NetworkConfig
+import com.syahputrareno975.cardbattlemodule.model.playerWithCard.PlayerWithCardsModel
+import com.syahputrareno975.cardbattlemodule.model.room.RoomDataModel
+import com.syahputrareno975.cardbattlemodule.task.QueueStreamTask
+import com.syahputrareno975.cardbattlemodule.util.NetDefault.NetConfigDefault
 import com.syahputrareno975.simplecardbattle.util.RoomRule.Companion.findEnemy
 import com.syahputrareno975.simplecardbattle.util.RoomRule.Companion.findPlayer
-import com.syahputrareno975.simplecardbattle.util.SerializableSave
+import com.syahputrareno975.cardbattlemodule.util.SerializableSave
 import kotlinx.android.synthetic.main.activity_queue.*
 import java.util.*
 import kotlin.concurrent.schedule
@@ -28,6 +28,7 @@ class QueueActivity : AppCompatActivity() {
     lateinit var IntentData : Intent
     var player = PlayerWithCardsModel()
     var room : RoomDataModel = RoomDataModel()
+    lateinit var networkConfig: NetworkConfig
 
     lateinit var controller: QueueStreamEventController
 
@@ -42,6 +43,11 @@ class QueueActivity : AppCompatActivity() {
         this.context = this@QueueActivity
         IntentData = intent
 
+        networkConfig = NetConfigDefault
+        if (SerializableSave(context,SerializableSave.serverChoosedFileSessionName).load() != null){
+            networkConfig = SerializableSave(context,SerializableSave.serverChoosedFileSessionName).load() as NetworkConfig
+        }
+
         player = SerializableSave(context, SerializableSave.userDataFileSessionName).load() as PlayerWithCardsModel
         player_name.setText("Lvl ${player.Owner.Level} ${player.Owner.Name}")
 
@@ -50,7 +56,7 @@ class QueueActivity : AppCompatActivity() {
 
         cancel.setOnClickListener(onCancelClick)
 
-        QueueStreamTask(player,NetConfigDefault,streamEvent).execute()
+        QueueStreamTask(player,networkConfig,streamEvent).execute()
     }
 
     val onCancelClick = object : View.OnClickListener {
@@ -121,7 +127,7 @@ class QueueActivity : AppCompatActivity() {
                 .setTitle("Error")
                 .setMessage("Cannot connect to server, Reason : ${s}")
                 .setPositiveButton("Try Again") { dialog, which ->
-                    QueueStreamTask(player,NetConfigDefault,this).execute()
+                    QueueStreamTask(player,networkConfig,this).execute()
                     dialog.dismiss()
                 }
                 .setCancelable(false)

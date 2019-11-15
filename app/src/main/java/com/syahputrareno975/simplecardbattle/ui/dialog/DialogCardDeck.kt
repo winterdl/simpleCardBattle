@@ -8,8 +8,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.syahputrareno975.simplecardbattle.R
-import com.syahputrareno975.simplecardbattle.model.card.CardModel
-import com.syahputrareno975.simplecardbattle.model.playerWithCard.PlayerWithCardsModel
+import com.syahputrareno975.cardbattlemodule.model.card.CardModel
+import com.syahputrareno975.cardbattlemodule.model.playerWithCard.PlayerWithCardsModel
 import com.syahputrareno975.simpleuno.adapter.AdapterCard
 
 class DialogCardDeck {

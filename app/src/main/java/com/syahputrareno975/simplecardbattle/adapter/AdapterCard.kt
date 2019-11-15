@@ -12,12 +12,10 @@ import android.widget.TextView
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 import com.syahputrareno975.simplecardbattle.R
-import com.syahputrareno975.simplecardbattle.model.card.CardModel
-import com.syahputrareno975.simplecardbattle.util.NetDefault.Companion.NetConfigDefault
+import com.syahputrareno975.cardbattlemodule.model.card.CardModel
+import com.syahputrareno975.cardbattlemodule.util.NetDefault.NetConfigDefault
 import java.lang.Exception
 import java.text.DecimalFormat
-import java.text.Format
-import java.util.*
 import kotlin.collections.ArrayList
 
 class AdapterCard : RecyclerView.Adapter<AdapterCard.ViewHolder> {
@@ -58,7 +56,7 @@ class AdapterCard : RecyclerView.Adapter<AdapterCard.ViewHolder> {
 
 
         Picasso.get()
-            .load(item.Image)
+            .load(if (item.Image == "") "${NetConfigDefault.toHttpUrl()}/Unknown.jpg" else item.Image)
             .into(holder.CardImage,object : Callback{
                 override fun onSuccess() {
 

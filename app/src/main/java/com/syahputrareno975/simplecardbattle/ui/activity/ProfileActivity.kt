@@ -10,17 +10,17 @@ import android.view.View
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.syahputrareno975.simplecardbattle.R
-import com.syahputrareno975.simplecardbattle.interfaces.LobbyStreamEventController
-import com.syahputrareno975.simplecardbattle.interfaces.ProfileStreamEvent
-import com.syahputrareno975.simplecardbattle.interfaces.ProfileStreamEventController
-import com.syahputrareno975.simplecardbattle.model.card.CardModel
-import com.syahputrareno975.simplecardbattle.model.playerWithCard.PlayerWithCardsModel
-import com.syahputrareno975.simplecardbattle.task.ProfileStreamTask
+import com.syahputrareno975.cardbattlemodule.interfaces.LobbyStreamEventController
+import com.syahputrareno975.cardbattlemodule.interfaces.ProfileStreamEvent
+import com.syahputrareno975.cardbattlemodule.interfaces.ProfileStreamEventController
+import com.syahputrareno975.cardbattlemodule.model.NetworkConfig
+import com.syahputrareno975.cardbattlemodule.model.card.CardModel
+import com.syahputrareno975.cardbattlemodule.model.playerWithCard.PlayerWithCardsModel
+import com.syahputrareno975.cardbattlemodule.task.ProfileStreamTask
+import com.syahputrareno975.cardbattlemodule.util.NetDefault.NetConfigDefault
 import com.syahputrareno975.simplecardbattle.ui.dialog.DialogCardInfo
-import com.syahputrareno975.simplecardbattle.util.NetDefault.Companion.NetConfigDefault
-import com.syahputrareno975.simplecardbattle.util.SerializableSave
+import com.syahputrareno975.cardbattlemodule.util.SerializableSave
 import com.syahputrareno975.simpleuno.adapter.AdapterCard
-import kotlinx.android.synthetic.main.activity_lobby.*
 import kotlinx.android.synthetic.main.activity_profile.*
 import java.text.DecimalFormat
 
@@ -28,6 +28,7 @@ class ProfileActivity : AppCompatActivity() {
 
     lateinit var context: Context
     lateinit var IntentData : Intent
+    lateinit var networkConfig: NetworkConfig
 
     var player = PlayerWithCardsModel()
     lateinit var adapterDeckProfile : AdapterCard
@@ -47,6 +48,12 @@ class ProfileActivity : AppCompatActivity() {
 
         context = this@ProfileActivity
         IntentData = intent
+
+        networkConfig = NetConfigDefault
+        if (SerializableSave(context,SerializableSave.serverChoosedFileSessionName).load() != null){
+            networkConfig = SerializableSave(context,SerializableSave.serverChoosedFileSessionName).load() as NetworkConfig
+        }
+
         player = SerializableSave(context, SerializableSave.userDataFileSessionName).load() as PlayerWithCardsModel
 
         profile_back_to_main_menu.setOnClickListener(onMenuProfileClick)
@@ -56,7 +63,7 @@ class ProfileActivity : AppCompatActivity() {
 
         setAdapterListCardInProfile()
 
-        ProfileStreamTask(player,NetConfigDefault,profileEvent).execute()
+        ProfileStreamTask(player,networkConfig,profileEvent).execute()
 
     }
 
@@ -172,7 +179,7 @@ class ProfileActivity : AppCompatActivity() {
                 .setTitle("Error")
                 .setMessage("Cannot connect to server, Reason : ${e}")
                 .setPositiveButton("Try Again") { dialog, which ->
-                    ProfileStreamTask(player,NetConfigDefault,this).execute()
+                    ProfileStreamTask(player,networkConfig,this).execute()
                     dialog.dismiss()
                 }
                 .setCancelable(false)
