@@ -89,36 +89,17 @@ class MainLobbyActivity : AppCompatActivity() {
             when (v) {
                 battle_button -> {
                     title_item_lobby.setText("Battle")
-                    val battleMenu = ArrayList<RoomDataModel>()
+                    if (::eventController.isInitialized) {
+                        eventController.leftLobby(object : ()->Unit{
+                            override fun invoke() {
 
-                    val randBattle = RoomDataModel()
-                    randBattle.Id = "RANDOM_BATTLE"
-                    randBattle.RoomName = "Random Battle"
-                    battleMenu.add(randBattle)
-
-                    list_item_lobby.adapter = AdapterRoom(context,R.layout.adapter_room,battleMenu)
-                    list_item_lobby.setOnItemClickListener { parent, view, position, id ->
-                        if (battleMenu.get(position).Id == "RANDOM_BATTLE"){
-                            if (::eventController.isInitialized) {
-                                eventController.leftLobby(object : ()->Unit{
-                                    override fun invoke() {
-
-                                        // left lobby to battle
-                                        val intent = Intent(context,QueueActivity::class.java)
-                                        startActivity(intent)
-                                        finish()
-                                    }
-                                })
+                                // left lobby to battle
+                                val intent = Intent(context,QueueActivity::class.java)
+                                startActivity(intent)
+                                finish()
                             }
-                            return@setOnItemClickListener
-                        }
-
-                        if (::eventController.isInitialized){
-                            eventController.getOnePlayer(battleMenu.get(position).Id)
-                        }
+                        })
                     }
-
-
                 }
                 players_button -> {
                     title_item_lobby.setText("Players")

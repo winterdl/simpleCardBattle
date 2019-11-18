@@ -39,11 +39,6 @@ class AdapterRoom : ArrayAdapter<RoomDataModel> {
         val item = getItem(position)
 
         holder.Name.text = item!!.RoomName
-        when (item.Id) {
-            "RANDOM_BATTLE" -> {
-                holder.IconRoom.visibility = View.GONE
-            }
-        }
 
         return row!!
     }

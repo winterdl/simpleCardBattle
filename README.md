@@ -1,24 +1,7 @@
 # Simple Card Battle
 
-# Done
+simple card battle game with simple rule, try collect your attack point higher enemy defensive point before time run out to reduce their health, player with higher health, win
 
-## 1. make lobby menu
-![GitHub Logo](/img/lobby.jpg)
+## server side with golang
 
-## 2. make profile menu
-![GitHub Logo](/img/profile.jpg)
-
-## 3. make shop menu
-![GitHub Logo](/img/shop.jpg)
-
-## 4. logout player
-![GitHub Logo](/img/leave_player.jpg)
-
-
-# Process
-
-## 1.make Random Battle
-
-# Plan
-
-## 1. make gameplay menu
+[github.com/renosyah/simpleCardBattleServer](https://github.com/renosyah/simpleCardBattleServer)
